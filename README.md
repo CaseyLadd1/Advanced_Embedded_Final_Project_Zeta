@@ -45,6 +45,12 @@ features in the final game, though this will first require implementing the
 necessary synchronization see where in thread interactions deadlock should be
 targeted to prevent.
 
+**John Berberian** is currently assuming responsibility for writing the compositor
+and display threads. This involves writing an algorithm to process and render events
+from a synchronized FIFO. Depending on the complexity of implementation we decide
+on, this may involve maintaining a parallel state and periodically rendering it at
+20Hz.
+
 **Casey Ladd** is currently assuming responsibility for research of the audio and
 video functions. The associated responsibilities include determining how to
 allow our program to read and display graphics from our array, and determining
