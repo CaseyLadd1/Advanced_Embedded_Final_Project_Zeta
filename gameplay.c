@@ -3,10 +3,14 @@
 
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
+//cursor values need to be passed into this section
 
 static uint16_t ammocount;
+static uint16_t lifecount;
 
 void gameplayInit(void){
+	ammocount = 6;
+	lifecount = 5;
 	//code goes here
 	//establishes initial values of life, ammo
 }
@@ -14,10 +18,18 @@ void gameplayInit(void){
 void shot_handler(void){
 	//called if shot button is pressed
 	//calls RNG to "waste" value, further randomizing user experience (1 RNG value total)
+	if(ammocount<=0){
 	//if no ammo, announce "RELOAD" and return 0
-	//if ammo, ammo--, check if cursor pos = pos of cocoa thread
-	//if cursor pos = cocoa pos, score++, pass cocoa a value to indicate it should run OS_Kill()
-	//return 1
+	}
+	if(ammocount>0){
+		ammocount--; //if ammo, ammo--, check if cursor pos = pos of cocoa thread
+		/*center of cursor should be within a certain x range and a certain y range
+		  these ranges are attached to a cocademon thread as "xmin" "xmax" "ymin" and "ymax"
+		  if cursor pos = cocoa pos, score++,
+		  pass cocoa a value to indicate it should run OS_Kill()
+		*/
+	  //return 1
+	}
 }
 
 void reload_handler(void){
