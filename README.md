@@ -55,3 +55,11 @@ on, this may involve maintaining a parallel state and periodically rendering it 
 video functions. The associated responsibilities include determining how to
 allow our program to read and display graphics from our array, and determining
 how to allow our board to play music.
+
+# Week 2 Progress
+
+The team is continuing to work on the bitmap images, sound, and deadlock
+prevention required to meet the project specifications. In particular, Sarah
+has taken the lead on developing bitmap image graphics. Amid other emergent
+projects, the other team members are continuing to coordinate with Sarah
+wherever possible and move forward on this project.
