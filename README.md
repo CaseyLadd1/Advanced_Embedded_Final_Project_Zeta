@@ -67,7 +67,10 @@ aware that we're able to use them. As an example, we're looking into using the t
 function and its related libraries present in Energia, as recommended in some user maunals for
 the LaunchPad. We've also created a skeleton code in a source file for game-specific
 mechanics, named gameplay.c, which will be filled out by the group as we connect the elements
-of our program together. The group is coordinating to divide up tasks whenever possible.
+of our program together. Additionally, we've created video.c and sound.c, which will handle our bitmap
+arrays and our PWM buzzer functions, respectively.
+
+The group is coordinating to divide up tasks whenever possible.
 Our hope in the upcoming week is to flesh out the skeleton code, to complete our creation
 of audio and visual resources, and to work out the best order for the creation and execution
 of different threads.
