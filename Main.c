@@ -9,7 +9,7 @@
 
 #include "FIFO.h"
 #include "LCD.h"
-#include "OS.h"
+#include "os.h"
 #include "PORTE.h"
 #include "UART.h"
 #include "joystick.h"
