@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Run with e.g.
 # echo images/*.bmp | sed 's/ /\n/g' | grep -E '^images/[0-9]' | xargs ./scripts/bmp_convert.py > graphics/MOOD_graphics.h
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 
 import io
@@ -16,7 +16,7 @@ def convert565(r, g, b):
     return red + green + blue
 
 def convert(path):
-    im = Image.open(path).convert("RGB")
+    im = ImageOps.flip(Image.open(path).convert("RGB"))
     data = np.array(im.getdata(), dtype='uint8')
     r, g, b = data.T.astype('uint16')
     return convert565(r, g, b)

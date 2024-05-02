@@ -362,7 +362,7 @@ int main(void) {
   OS_Init(); // initialize, disable interrupts
   Device_Init();
   CrossHair_Init();
-	BSP_LCD_DrawBitmap(16, 16, BitMapValues, 16, 16);
+	BSP_LCD_DrawBitmap(16, 16, BitMapValues+BMP_1_1_CAC_ATTAC_B_OFFSET, 16, 16);
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
