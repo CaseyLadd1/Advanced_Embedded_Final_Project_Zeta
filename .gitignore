@@ -1,4 +1,5 @@
 Objects
 Listings
 *.uvopt
-*.uvgui.jj-vm
+*.uvgui.*
+*.uvproj
