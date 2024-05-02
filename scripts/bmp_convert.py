@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Run with e.g.
+# echo images/*.bmp | sed 's/ /\n/g' | grep -E '^images/[0-9]' | xargs ./scripts/bmp_convert.py > graphics/MOOD_graphics.h
 from PIL import Image
 import numpy as np
 
