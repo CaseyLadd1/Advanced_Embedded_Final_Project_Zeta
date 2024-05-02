@@ -9,13 +9,14 @@
 
 #include "FIFO.h"
 #include "LCD.h"
-#include "OS.h"
+#include "os.h"
 #include "PORTE.h"
 #include "UART.h"
 #include "joystick.h"
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
 #include <string.h>
+#include "graphics/MOOD_graphics.h"
 
 // Constants
 #define BGCOLOR LCD_BLACK
@@ -361,6 +362,7 @@ int main(void) {
   OS_Init(); // initialize, disable interrupts
   Device_Init();
   CrossHair_Init();
+	BSP_LCD_DrawBitmap(16, 16, BitMapValues+BMP_1_1_CAC_ATTAC_B_OFFSET, 16, 16);
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
