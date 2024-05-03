@@ -27,13 +27,11 @@ uint32_t rng(void) {
 }
 
 /**
- * A helper utility to get a useful direction:
- * 0. Stationary/stay in place
- * 1. Right 1
- * 2. Up 1
- * 3. Left 1
- * 4. Down 1
- * from a generated random number.
+ * A helper utility to get a useful direction with one-hot encoding (bits checked most-to-least significant to balance out probabilities)
+ * 0b 1 ???? -- move left
+ * 0b 0 1??? -- move right
+ * 0b 0 01?? -- move up
+ * 0b 0 001? -- move down
  *
  * Functionally, a wrapper for rng().
  *

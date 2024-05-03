@@ -23,28 +23,29 @@ uint8_t ValidateCoordinates(uint16_t CurrentX, uint16_t CurrentY, uint16_t NewX,
 }
 
 void MoveCube(uint16_t CurrentX, uint16_t CurrentY, uint16_t *Bitmap, uint16_t Width, uint16_t Height) {
-    uint8_t NextPositionValidated = 0;
+    uint8_t NextPositionValidated = 0; // by default, new place to draw bitmap (cube) has not been validated
     uint16_t NewX, NewY;
 
     while (NextPositionValidated == 0) {
+	// get a prospective new position, but await further checks to finalize
 	uint16_t NextMoveDirection = (uint16_t) GetRandomDirection();
 
-	if (NextMoveDirection & CUBE_DIR_DOWN) {
-	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX, CurrentY + 1);
-	    NewX = CurrentX;
-	    NewY = CurrentY + 1;
-	} else if (NextMoveDirection & CUBE_DIR_LEFT) {
-	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX - 1, CurrentY);
+	if (NextMoveDirection & CUBE_DIR_LEFT) {
+	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX - 1, CurrentY); // set counter variable according to whether prospective new coordinates are valid
 	    NewX = CurrentX - 1;
 	    NewY = CurrentY;
-	} else if (NextMoveDirection & CUBE_DIR_UP) {
-	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX, CurrentY - 1);
-	    NewX = CurrentX;
-	    NewY = CurrentY - 1;
 	} else if (NextMoveDirection & CUBE_DIR_RIGHT) {
 	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX + 1, CurrentY);
 	    NewX = CurrentX + 1;
 	    NewY = CurrentY;
+	} else if (NextMoveDirection & CUBE_DIR_UP) {
+	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX, CurrentY - 1);
+	    NewX = CurrentX;
+	    NewY = CurrentY - 1; // UP is -y direction, DOWN is +y direction on LCD
+	} else if (NextMoveDirection & CUBE_DIR_DOWN) {
+	    NextPositionValidated = ValidateCoordinates(CurrentX, CurrentY, CurrentX, CurrentY + 1);
+	    NewX = CurrentX;
+	    NewY = CurrentY + 1;
 	} else {
 	    // a shorthand to simply redraw the cube at the current position, which is assumed valid
 	    NextPositionValidated = 1;
@@ -53,6 +54,6 @@ void MoveCube(uint16_t CurrentX, uint16_t CurrentY, uint16_t *Bitmap, uint16_t W
 	}
     }
 
-    BSP_LCD_FillRect(CurrentX, CurrentY, Width, Height, LCD_BLACK);
-    BSP_LCD_DrawBitmap(NewX, NewY, Bitmap, Width, Height);
+    BSP_LCD_FillRect(CurrentX, CurrentY, Width, Height, LCD_BLACK); // Erase cube at current position
+    BSP_LCD_DrawBitmap(NewX, NewY, Bitmap, Width, Height); // Draw cube at new position
 }
