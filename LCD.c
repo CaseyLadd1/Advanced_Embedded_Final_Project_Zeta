@@ -319,26 +319,7 @@ uint8_t static writedata(uint8_t c) {
 // delay function from sysctl.c
 // which delays 3.3*ulCount cycles
 // ulCount=23746 => 1ms = 23746*3.3cycle/loop/80,000
-#ifdef __TI_COMPILER_VERSION__
-// Code Composer Studio Code
-void parrotdelay(uint32_t ulCount) {
-  __asm("    subs    r0, #1\n"
-        "    bne     Delay\n"
-        "    bx      lr\n");
-}
-
-#else
-// Keil uVision Code
-  //Keil uVision Code
-  void
-  parrotdelay(uint32_t ulCount)
-  {
-  __asm("    subs    r0, #1\n"
-        "    bne     parrotdelay\n"
-        "    bx      lr\n");
-  }
-
-#endif
+void parrotdelay(uint32_t ulCount);
 
 // Rather than a bazillion writecommand() and writedata() calls, screen
 // initialization commands and arguments are organized in these tables

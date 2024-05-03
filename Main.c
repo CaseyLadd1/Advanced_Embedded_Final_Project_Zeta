@@ -363,7 +363,7 @@ int main(void) {
   Device_Init();
   CrossHair_Init();
 	RenderInit();
-	
+ShowSpriteTest();	
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
