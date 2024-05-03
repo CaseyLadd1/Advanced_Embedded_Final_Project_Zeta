@@ -1,3 +1,6 @@
+#ifndef EMB_LCD_H
+#define EMB_LCD_H
+
 #include <inttypes.h>
 // color constants                  red  grn  blu
 #define LCD_BLACK 0x0000      //   0,   0,   0
@@ -297,3 +300,5 @@ void BSP_LCD_OutputInit(void);
 //(0-5)
 // outputs: none
 void BSP_LCD_DrawCrosshair(int16_t x, int16_t y, int16_t bgColor);
+
+#endif
