@@ -48,6 +48,7 @@
 #define BMP_6_5_TITLE_OFFSET 0x2b00
 #define BMP_6_6_TITLE_OFFSET 0x2c00
 #define BMP_6_7_TITLE_OFFSET 0x2d00
+#define BMP_LENGTH 0x2e00
 
 #ifndef DEFINE_BITMAP
 extern const uint16_t BitMapValues[];
