@@ -12,7 +12,7 @@
 #include "os.h"
 
 static inline void _drawSprite_internal(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t offset) {
-	BSP_LCD_DrawBitmap(blockx*16, (blocky+1)*16, BitMapValues+offset, 16, 16, direction);
+	BSP_LCD_DrawBitmap(blockx*16, (blocky+1)*16-1, BitMapValues+offset, 16, 16, direction);
 }
 
 static inline void _clearSprite_internal(uint8_t blockx, uint8_t blocky) {
