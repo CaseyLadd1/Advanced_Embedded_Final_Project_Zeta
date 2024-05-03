@@ -11,7 +11,8 @@
 #include <string.h>
 
 //save tracks as arrays or TCBs?
-
+// Commented out for compiler version 6 to work.
+/*
 void play_track(track){
 	//code goes here
 	//creates a thread that plays a given track
@@ -25,6 +26,7 @@ void play_tone(frequency,duration){
 		//tone function goes here
 	}
 }
+*/
 
 void E2M6(){
 	//code goes here

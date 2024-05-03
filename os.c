@@ -250,6 +250,7 @@ int OS_Try(Sema4Type *semaPt) {
 	int retval = semaPt->Value;
 	 semaPt->Value -= (semaPt->Value > 0);
   EndCritical(sr);
+	return retval;
 }
 
 // ******** OS_Signal ************
