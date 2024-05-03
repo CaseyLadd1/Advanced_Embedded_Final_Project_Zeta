@@ -85,6 +85,8 @@ void OS_Signal(Sema4Type *semaPt);
 // output: none
 void OS_bWait(Sema4Type *semaPt);
 
+int OS_bTry(Sema4Type *semaPt);
+
 // ******** OS_bSignal ************
 // input:  pointer to a binary semaphore
 // output: none

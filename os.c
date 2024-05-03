@@ -294,6 +294,16 @@ void OS_bWait(Sema4Type *semaPt) {
 #endif
 }
 
+// Returns nonzero if acquired semaphore, zero if failed.
+// Does not block, does not loop.
+int OS_bTry(Sema4Type *semaPt) {
+	long sr = StartCritical();
+	int retval = semaPt->Value;
+	semaPt->Value = 0;
+	EndCritical(sr);
+	return retval;
+}
+
 // ******** OS_bSignal ************
 // input:  pointer to a binary semaphore
 // output: none
