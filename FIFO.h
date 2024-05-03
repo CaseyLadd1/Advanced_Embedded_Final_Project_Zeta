@@ -38,7 +38,7 @@ void EndCritical(long sr); // restore I bit to previous value
 #define JSFIFOSUCCESS 1
 #define JSFIFOFAIL 0
 
-#define DRAWFIFOSIZE 16 // can be any size
+#define DRAWFIFOSIZE 64 // can be any size
 #define DRAWFIFOSUCCESS 1
 #define DRAWFIFOFAIL 0
 
@@ -68,10 +68,10 @@ uint32_t JsFifo_Size(void);
 // initialize pointer FIFO
 void DrawFifo_Init(void);
 // add element to end of pointer FIFO
+void DrawFifo_Put(spriteMessage data);
+// add element to end of pointer FIFO
 // return RXFIFOSUCCESS if successful
-int DrawFifo_Put(spriteMessage data);
-
-void DrawFifo_PutBlocking(spriteMessage data);
+int DrawFifo_TryPut(spriteMessage data);
 // remove element from front of pointer FIFO
 // return RXFIFOSUCCESS if successful
 int DrawFifo_Get(spriteMessage *datapt);

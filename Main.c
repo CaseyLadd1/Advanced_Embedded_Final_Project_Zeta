@@ -16,7 +16,7 @@
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
 #include <string.h>
-#include "graphics/MOOD_graphics.h"
+#include "video.h"
 
 // Constants
 #define BGCOLOR LCD_BLACK
@@ -362,56 +362,18 @@ int main(void) {
   OS_Init(); // initialize, disable interrupts
   Device_Init();
   CrossHair_Init();
-	BSP_LCD_DrawBitmap(0*16, 1*16, BitMapValues+BMP_1_1_CAC_ATTAC_B_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(1*16, 1*16, BitMapValues+BMP_1_2_CAC_FACE_BACC_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(2*16, 1*16, BitMapValues+BMP_1_3_CACO_SIDE_OFFSET, 16, 16, 1);
-	BSP_LCD_DrawBitmap(3*16, 1*16, BitMapValues+BMP_1_4_PARTICLES_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(4*16, 1*16, BitMapValues+BMP_1_5_FIREBALLONE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(5*16, 1*16, BitMapValues+BMP_1_6_FIREBALLTWO_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(6*16, 1*16, BitMapValues+BMP_1_7_FIREBALLTHREE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(7*16, 1*16, BitMapValues+BMP_1_8_BLOOD_CORNER_OFFSET, 16, 16, 3);
+	RenderInit();
 	
-	BSP_LCD_DrawBitmap(0*16, 2*16, BitMapValues+BMP_2_1_CAC_ATTTAC_A_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(1*16, 2*16, BitMapValues+BMP_2_2_CACO_FRONT_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(2*16, 2*16, BitMapValues+BMP_2_3_CACO_POP_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(3*16, 2*16, BitMapValues+BMP_2_4_WHIRL_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(4*16, 2*16, BitMapValues+BMP_2_5_FIREBALLFOUR_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(5*16, 2*16, BitMapValues+BMP_2_6_FIREBALLFIVE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(6*16, 2*16, BitMapValues+BMP_2_7_FIREBALLSIX_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(7*16, 2*16, BitMapValues+BMP_2_8_BLOOD_BORDER_OFFSET, 16, 16, 1);
-	
-	BSP_LCD_DrawBitmap(0*16, 3*16, BitMapValues+BMP_3_1_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(1*16, 3*16, BitMapValues+BMP_3_2_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(2*16, 3*16, BitMapValues+BMP_3_3_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(3*16, 3*16, BitMapValues+BMP_3_4_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(4*16, 3*16, BitMapValues+BMP_3_5_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(5*16, 3*16, BitMapValues+BMP_3_6_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(6*16, 3*16, BitMapValues+BMP_3_7_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(7*16, 3*16, BitMapValues+BMP_3_8_BLOOD_BORDER_H_OFFSET, 16, 16, 2);
-	
-	BSP_LCD_DrawBitmap(0*16, 4*16, BitMapValues+BMP_4_1_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(1*16, 4*16, BitMapValues+BMP_4_2_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(2*16, 4*16, BitMapValues+BMP_4_3_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(3*16, 4*16, BitMapValues+BMP_4_4_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(4*16, 4*16, BitMapValues+BMP_4_5_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(5*16, 4*16, BitMapValues+BMP_4_6_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(6*16, 4*16, BitMapValues+BMP_4_7_TITLE_OFFSET, 16, 16, 0);
-	
-	BSP_LCD_DrawBitmap(0*16, 5*16, BitMapValues+BMP_5_1_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(1*16, 5*16, BitMapValues+BMP_5_2_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(2*16, 5*16, BitMapValues+BMP_5_3_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(3*16, 5*16, BitMapValues+BMP_5_4_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(4*16, 5*16, BitMapValues+BMP_5_5_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(5*16, 5*16, BitMapValues+BMP_5_6_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(6*16, 5*16, BitMapValues+BMP_5_7_TITLE_OFFSET, 16, 16, 0);
-	
-	BSP_LCD_DrawBitmap(0*16, 6*16, BitMapValues+BMP_6_1_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(1*16, 6*16, BitMapValues+BMP_6_2_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(2*16, 6*16, BitMapValues+BMP_6_3_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(3*16, 6*16, BitMapValues+BMP_6_4_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(4*16, 6*16, BitMapValues+BMP_6_5_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(5*16, 6*16, BitMapValues+BMP_6_6_TITLE_OFFSET, 16, 16, 0);
-	BSP_LCD_DrawBitmap(6*16, 6*16, BitMapValues+BMP_6_7_TITLE_OFFSET, 16, 16, 0);
+	for (int by = 0; by < 3; by++) {
+		for (int bx = 0; bx < 8; bx++) {
+			DrawSprite(bx, by, 0, 0x100*(8*by+bx));
+		}
+	}
+	for (int by = 3; by < 6; by++) {
+		for (int bx = 0; bx < 7; bx++) {
+			DrawSprite(bx, by, 0, 0x100*(3*8+7*(by-3)+bx));
+		}
+	}
 	
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
@@ -433,6 +395,7 @@ int main(void) {
   NumCreated += OS_AddThread(&Consumer, 128, 1);
   NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
   NumCreated += OS_AddThread(&Display, 128, 3);
+	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes

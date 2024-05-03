@@ -44,7 +44,7 @@ void ClearSprite(uint8_t blockx, uint8_t blocky) {
 extern unsigned long NumSamples;
 #define RUNLENGTH 600
 extern Sema4Type LCDFree;
-void SpriteRenderThread() {
+void SpriteRenderThread(void) {
 	while (NumSamples < RUNLENGTH) {
     spriteMessage data;
     DrawFifo_Get(&data);
@@ -57,4 +57,8 @@ void SpriteRenderThread() {
     OS_bSignal(&LCDFree);
   }
   OS_Kill(); // done
+}
+
+void RenderInit(void) {
+	DrawFifo_Init();
 }
