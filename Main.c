@@ -387,6 +387,7 @@ int main(void) {
 	BSP_LCD_DrawBitmap(4*16, 3*16, BitMapValues+BMP_3_5_TITLE_OFFSET, 16, 16, 0);
 	BSP_LCD_DrawBitmap(5*16, 3*16, BitMapValues+BMP_3_6_TITLE_OFFSET, 16, 16, 0);
 	BSP_LCD_DrawBitmap(6*16, 3*16, BitMapValues+BMP_3_7_TITLE_OFFSET, 16, 16, 0);
+	BSP_LCD_DrawBitmap(7*16, 3*16, BitMapValues+BMP_3_8_BLOOD_BORDER_H_OFFSET, 16, 16, 2);
 	
 	BSP_LCD_DrawBitmap(0*16, 4*16, BitMapValues+BMP_4_1_TITLE_OFFSET, 16, 16, 0);
 	BSP_LCD_DrawBitmap(1*16, 4*16, BitMapValues+BMP_4_2_TITLE_OFFSET, 16, 16, 0);
