@@ -241,6 +241,17 @@ void OS_Wait(Sema4Type *semaPt) {
 #endif
 }
 
+// ******** OS_Try ************
+// attempt to decrement semaphore, nonblocking.
+// input:  pointer to a counting semaphore
+// output: nonzero on success, zero on failure.
+int OS_Try(Sema4Type *semaPt) {
+  long sr = StartCritical();
+	int retval = semaPt->Value;
+	 semaPt->Value -= (semaPt->Value > 0);
+  EndCritical(sr);
+}
+
 // ******** OS_Signal ************
 // increment semaphore
 // input:  pointer to a counting semaphore
