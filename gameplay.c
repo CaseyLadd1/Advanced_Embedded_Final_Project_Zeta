@@ -1,24 +1,29 @@
 // gameplay.c
 //used to define more specific features of gameplay
-
+#define EMB_GAMEPLAY_C_INTERNAL
+#include "gameplay.h"
 #include "tm4c123gh6pm.h"
-#include <stdint.h>
-#include "os.h"
 #include "video.h"
 //cursor values need to be passed into this section
 
+// todo: make semaphore.
 static uint16_t ammocount;
 static uint16_t lifecount;
 
-#define VERTICALNUM 6
-#define HORIZONTALNUM 6
-typedef struct {
-uint32_t position[2];
-Sema4Type BlockFree;
-} block;
-block BlockArray[HORIZONTALNUM][VERTICALNUM];
 
-void gameplayInit(void){
+void InitBlockArray(void) {
+	for (int bx = 0; bx < HORIZONTALNUM; bx++) {
+		for (int by = 0; by < VERTICALNUM; by++) {
+			OS_InitSemaphore(&BlockArray[bx][by].BlockFree, 1);
+			OS_InitSemaphore(&BlockArray[bx][by].Touched, 0);
+			BlockArray[bx][by].position[0] = bx*16;
+			BlockArray[bx][by].position[0] = by*16;
+		}
+	}
+}
+
+void InitGameplay(void){
+	InitBlockArray();
 	ammocount = 6;
 	lifecount = 5;
 	//code goes here
@@ -59,7 +64,13 @@ void cocoademon_handler(void){
 void cocoademon_instance(void){
 	// For now, just run a very simplified version.
 	uint8_t blockx, blocky = 0;
-DrawSprite(blockx, blocky, 0, 0);	
+	// Mark block as not free.
+	OS_bWait(&BlockArray[blockx][blocky].BlockFree);
+	
+DrawSprite(blockx, blocky, 0, 0);
+OS_bWait(&BlockArray[blockx][blocky].Touched);
+ClearSprite(blockx, blocky);
+OS_Kill();
 	//runs as a thread for each active instance of cocoademon
 	//when lifetime=0 or is defeated (value passed from shot_handler), run OS_Kill()
 }
