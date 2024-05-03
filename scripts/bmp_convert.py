@@ -16,7 +16,7 @@ def convert565(r, g, b):
     return red + green + blue
 
 def convert(path):
-    im = ImageOps.flip(Image.open(path).convert("RGB"))
+    im = Image.open(path).convert("RGB")
     data = np.array(im.getdata(), dtype='uint8')
     r, g, b = data.T.astype('uint16')
     return convert565(r, g, b)

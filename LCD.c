@@ -872,11 +872,13 @@ uint16_t BSP_LCD_SwapColor(uint16_t x) {
 // Output: none
 // Must be less than or equal to 128 pixels wide by 128 pixels high
 void BSP_LCD_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w,
-                        int16_t h) {
+                        int16_t h, uint8_t direction) {
   int16_t skipC = 0; // non-zero if columns need to be skipped due to clipping
   int16_t originalWidth = w; // save this value; even if not all columns fit on
                              // the screen, the image is still this width in ROM
-  int i = w * (h - 1);
+	int horizInc = 1 - 2 * (1 & direction);
+	//int vertInc = 1 - (2 & direction);
+  int i = ((2 & direction) >> 1) * w * (h - 1) + (w - 1) * (1 & direction);
 
   if ((x >= _width) || ((y - h + 1) >= _height) || ((x + w) <= 0) || (y < 0)) {
     return; // image is totally off the screen, do nothing
@@ -916,10 +918,10 @@ void BSP_LCD_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w,
       writedata((uint8_t)(image[i] >> 8));
       // send the bottom 8 bits
       writedata((uint8_t)image[i]);
-      i = i + 1; // go to the next pixel
+      i = i + horizInc; // go to the next pixel
     }
-    i = i + skipC;
-    i = i - 2 * originalWidth;
+    i = i + skipC * horizInc;
+    i = i - 2 * originalWidth * (1 & ((direction >> 1) ^ direction)) * horizInc;
   }
 }
 
