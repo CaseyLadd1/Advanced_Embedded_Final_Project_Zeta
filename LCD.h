@@ -113,7 +113,10 @@ uint16_t BSP_LCD_SwapColor(uint16_t x);
 // Output: none
 // Must be less than or equal to 128 pixels wide by 128 pixels high
 void BSP_LCD_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w,
-                        int16_t h);
+                        int16_t h, uint8_t direction);
+
+#define BSP_LCD_BITMAP_DIRECTION_FLIPH 0x1
+#define BSP_LCD_BITMAP_DIRECTION_FLIPV 0x2
 
 //------------BSP_LCD_DrawCharS------------
 // Simple character draw function.  This is the same function from
