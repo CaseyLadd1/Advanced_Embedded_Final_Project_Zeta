@@ -28,8 +28,11 @@ uint32_t rng(void) {
 }
 
 /**
- * A helper utility to get a useful direction (0, 1, 2, 3, or 4)
- * from a generated random number.
+ * A helper utility to get a useful direction with one-hot encoding (bits checked most-to-least significant to balance out probabilities)
+ * 0b 1 ???? -- move left
+ * 0b 0 1??? -- move right
+ * 0b 0 01?? -- move up
+ * 0b 0 001? -- move down
  *
  * Functionally, a wrapper for rng().
  *
@@ -37,5 +40,5 @@ uint32_t rng(void) {
  * For: ECE 4501: Advanced Embedded Computing Systems, Spring 2024
  */
 uint32_t GetRandomDirection(void) {
-    return rng() & ((uint32_t) 0x03);
+    return rng() & ((uint32_t) 0x1f); // Allows one-hot direction encoding for ideal masking
 }
