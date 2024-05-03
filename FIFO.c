@@ -32,6 +32,13 @@ jsDataType volatile *JsGetPt; // get next
 jsDataType static JsFifo[JSFIFOSIZE];
 Sema4Type JsFifoAvailable;
 
+spriteMessage volatile *DrawPutPt; // put next
+spriteMessage volatile *DrawGetPt; // get next
+spriteMessage static DrawFifo[JSFIFOSIZE];
+Sema4Type DrawFifoAvailable;
+
+
+
 // initialize pointer FIFO
 void JsFifo_Init(void) {
   long sr;
@@ -75,4 +82,49 @@ uint32_t JsFifo_Size(void) {
             sizeof(jsDataType));
   }
   return ((uint32_t)(JsPutPt - JsGetPt) / sizeof(jsDataType));
+}
+
+// initialize pointer FIFO
+void DrawFifo_Init(void) {
+  long sr;
+  sr = StartCritical(); // make atomic
+  OS_InitSemaphore(&DrawFifoAvailable, 0);
+  DrawPutPt = DrawGetPt = &DrawFifo[0]; // Empty
+  EndCritical(sr);
+}
+// add element to end of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int DrawFifo_Put(spriteMessage data) {
+  spriteMessage volatile *nextPutPt;
+  nextPutPt = DrawPutPt + 1;
+  if (nextPutPt == &DrawFifo[DRAWFIFOSIZE]) {
+    nextPutPt = &DrawFifo[0]; // wrap
+  }
+  if (nextPutPt == DrawGetPt) {
+    return (DRAWFIFOFAIL); // Failed, fifo full
+  } else {
+    *(DrawPutPt) = data;   // Put
+    DrawPutPt = nextPutPt; // Success, update
+    OS_Signal(&DrawFifoAvailable);
+    return (DRAWFIFOSUCCESS);
+  }
+}
+// remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int DrawFifo_Get(spriteMessage *datapt) {
+  OS_Wait(&DrawFifoAvailable);
+  *datapt = *(DrawGetPt++);
+  if (DrawGetPt == &DrawFifo[DRAWFIFOSIZE]) {
+    DrawGetPt = &DrawFifo[0]; // wrap
+  }
+  return (DRAWFIFOSUCCESS);
+}
+// number of elements in pointer FIFO
+// 0 to RXFIFOSIZE-1
+uint32_t DrawFifo_Size(void) {
+  if (DrawPutPt < DrawGetPt) {
+    return ((uint32_t)(DrawPutPt - DrawGetPt + (DRAWFIFOSIZE * sizeof(spriteMessage))) /
+            sizeof(spriteMessage));
+  }
+  return ((uint32_t)(DrawPutPt - DrawGetPt) / sizeof(spriteMessage));
 }

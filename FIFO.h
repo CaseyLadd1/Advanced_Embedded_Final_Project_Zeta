@@ -38,9 +38,20 @@ void EndCritical(long sr); // restore I bit to previous value
 #define JSFIFOSUCCESS 1
 #define JSFIFOFAIL 0
 
+#define DRAWFIFOSIZE 16 // can be any size
+#define DRAWFIFOSUCCESS 1
+#define DRAWFIFOFAIL 0
+
 typedef struct {
   uint16_t x, y;
 } jsDataType;
+
+typedef struct {
+	uint8_t blockx, blocky;
+	uint8_t direction;
+	uint8_t clear; // TODO maybe put this in one of the bits of direction? For now it doesn't add size, but later.
+	uint32_t sprite;
+} spriteMessage;
 
 // initialize pointer FIFO
 void JsFifo_Init(void);
@@ -54,4 +65,17 @@ int JsFifo_Get(jsDataType *datapt);
 // 0 to RXFIFOSIZE-1
 uint32_t JsFifo_Size(void);
 
+// initialize pointer FIFO
+void DrawFifo_Init(void);
+// add element to end of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int DrawFifo_Put(spriteMessage data);
+
+void DrawFifo_PutBlocking(spriteMessage data);
+// remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int DrawFifo_Get(spriteMessage *datapt);
+// number of elements in pointer FIFO
+// 0 to RXFIFOSIZE-1
+uint32_t DrawFifo_Size(void);
 #endif //  __FIFO_H__
