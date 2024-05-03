@@ -62,3 +62,16 @@ void SpriteRenderThread(void) {
 void RenderInit(void) {
 	DrawFifo_Init();
 }
+
+void ShowSpriteTest(void) {
+	for (int by = 0; by < 3; by++) {
+		for (int bx = 0; bx < 8; bx++) {
+			DrawSprite(bx, by, 0, 0x100*(8*by+bx));
+		}
+	}
+	for (int by = 3; by < 6; by++) {
+		for (int bx = 0; bx < 7; bx++) {
+			DrawSprite(bx, by, 0, 0x100*(3*8+7*(by-3)+bx));
+		}
+	}
+}

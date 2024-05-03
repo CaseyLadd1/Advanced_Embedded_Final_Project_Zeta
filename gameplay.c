@@ -4,7 +4,7 @@
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
 #include "os.h"
-#include "graphics/MOOD_graphics.h"
+#include "video.h"
 //cursor values need to be passed into this section
 
 static uint16_t ammocount;
@@ -59,7 +59,7 @@ void cocoademon_handler(void){
 void cocoademon_instance(void){
 	// For now, just run a very simplified version.
 	uint8_t blockx, blocky = 0;
-	
+DrawSprite(blockx, blocky, 0, 0);	
 	//runs as a thread for each active instance of cocoademon
 	//when lifetime=0 or is defeated (value passed from shot_handler), run OS_Kill()
 }
