@@ -241,6 +241,18 @@ void OS_Wait(Sema4Type *semaPt) {
 #endif
 }
 
+// ******** OS_Try ************
+// attempt to decrement semaphore, nonblocking.
+// input:  pointer to a counting semaphore
+// output: nonzero on success, zero on failure.
+int OS_Try(Sema4Type *semaPt) {
+  long sr = StartCritical();
+	int retval = semaPt->Value;
+	 semaPt->Value -= (semaPt->Value > 0);
+  EndCritical(sr);
+	return retval;
+}
+
 // ******** OS_Signal ************
 // increment semaphore
 // input:  pointer to a counting semaphore
@@ -292,6 +304,16 @@ void OS_bWait(Sema4Type *semaPt) {
   semaPt->Value = 0;
   EndCritical(sr);
 #endif
+}
+
+// Returns nonzero if acquired semaphore, zero if failed.
+// Does not block, does not loop.
+int OS_bTry(Sema4Type *semaPt) {
+	long sr = StartCritical();
+	int retval = semaPt->Value;
+	semaPt->Value = 0;
+	EndCritical(sr);
+	return retval;
 }
 
 // ******** OS_bSignal ************

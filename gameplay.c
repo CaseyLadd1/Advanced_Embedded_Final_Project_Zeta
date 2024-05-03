@@ -3,10 +3,20 @@
 
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
+#include "os.h"
+#include "video.h"
 //cursor values need to be passed into this section
 
 static uint16_t ammocount;
 static uint16_t lifecount;
+
+#define VERTICALNUM 6
+#define HORIZONTALNUM 6
+typedef struct {
+uint32_t position[2];
+Sema4Type BlockFree;
+} block;
+block BlockArray[HORIZONTALNUM][VERTICALNUM];
 
 void gameplayInit(void){
 	ammocount = 6;
@@ -46,8 +56,10 @@ void cocoademon_handler(void){
 	//checks RNG for cocoademon position, color, lifetime (4 RNG values total)
 }
 
-void cocoademon_instance(){
-	//code goes here
+void cocoademon_instance(void){
+	// For now, just run a very simplified version.
+	uint8_t blockx, blocky = 0;
+DrawSprite(blockx, blocky, 0, 0);	
 	//runs as a thread for each active instance of cocoademon
 	//when lifetime=0 or is defeated (value passed from shot_handler), run OS_Kill()
 }

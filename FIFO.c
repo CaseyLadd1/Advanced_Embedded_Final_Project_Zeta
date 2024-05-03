@@ -32,6 +32,14 @@ jsDataType volatile *JsGetPt; // get next
 jsDataType static JsFifo[JSFIFOSIZE];
 Sema4Type JsFifoAvailable;
 
+spriteMessage volatile *DrawPutPt; // put next
+spriteMessage volatile *DrawGetPt; // get next
+spriteMessage static DrawFifo[DRAWFIFOSIZE];
+Sema4Type DrawFifoAvailable;
+Sema4Type DrawFifoRoom;
+
+
+
 // initialize pointer FIFO
 void JsFifo_Init(void) {
   long sr;
@@ -75,4 +83,66 @@ uint32_t JsFifo_Size(void) {
             sizeof(jsDataType));
   }
   return ((uint32_t)(JsPutPt - JsGetPt) / sizeof(jsDataType));
+}
+
+// initialize pointer FIFO
+void DrawFifo_Init(void) {
+  long sr;
+  sr = StartCritical(); // make atomic
+  OS_InitSemaphore(&DrawFifoAvailable, 0);
+	OS_InitSemaphore(&DrawFifoRoom, DRAWFIFOSIZE);
+  DrawPutPt = DrawGetPt = &DrawFifo[0]; // Empty
+  EndCritical(sr);
+}
+// add element to end of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int DrawFifo_TryPut(spriteMessage data) {
+	spriteMessage volatile *nextPutPt;
+	if (!OS_Try(&DrawFifoRoom)) return DRAWFIFOFAIL;
+	long sr = StartCritical();
+	nextPutPt = DrawPutPt + 1;
+  if (nextPutPt == &DrawFifo[DRAWFIFOSIZE]) {
+    nextPutPt = &DrawFifo[0]; // wrap
+  }
+	*(DrawPutPt) = data;   // Put
+  DrawPutPt = nextPutPt; // Success, update
+  OS_Signal(&DrawFifoAvailable);
+	EndCritical(sr);
+	return DRAWFIFOSUCCESS;
+}
+void DrawFifo_Put(spriteMessage data) {
+	spriteMessage volatile *nextPutPt;
+	OS_Wait(&DrawFifoRoom);
+	long sr = StartCritical();
+	nextPutPt = DrawPutPt + 1;
+  if (nextPutPt == &DrawFifo[DRAWFIFOSIZE]) {
+    nextPutPt = &DrawFifo[0]; // wrap
+  }
+	*(DrawPutPt) = data;   // Put
+  DrawPutPt = nextPutPt; // Success, update
+  OS_Signal(&DrawFifoAvailable);
+	EndCritical(sr);
+}
+
+// remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int DrawFifo_Get(spriteMessage *datapt) {
+  OS_Wait(&DrawFifoAvailable);
+	long sr = StartCritical();
+  *datapt = *(DrawGetPt++);
+  if (DrawGetPt == &DrawFifo[DRAWFIFOSIZE]) {
+    DrawGetPt = &DrawFifo[0]; // wrap
+  }
+	OS_Signal(&DrawFifoRoom);
+	EndCritical(sr);
+  return (DRAWFIFOSUCCESS);
+}
+// number of elements in pointer FIFO
+// 0 to RXFIFOSIZE-1
+uint32_t DrawFifo_Size(void) {
+  if (DrawPutPt < DrawGetPt) {
+    return ((uint32_t)(DrawPutPt - DrawGetPt + (DRAWFIFOSIZE * sizeof(spriteMessage))) /
+            sizeof(spriteMessage));
+  }
+  return ((uint32_t)(DrawPutPt - DrawGetPt) / sizeof(spriteMessage));
 }

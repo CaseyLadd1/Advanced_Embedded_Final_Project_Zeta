@@ -1,4 +1,5 @@
 #include "rng.h"
+#include "../os.h"
 
 /**
  * A simple XORshift pseudorandom number generator (PRNG) with theoretical period 2**32 - 1

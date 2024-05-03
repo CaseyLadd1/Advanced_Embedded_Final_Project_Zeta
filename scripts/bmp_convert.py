@@ -29,12 +29,12 @@ def printHeader():
 
 def printFooter():
     print('''};
+#endif
 #endif''')
 
 def sanitizeMacro(s):
     return re.sub('[^A-Z0-9]+','_', s.upper())
-
-file = io.StringIO("\nconst uint16_t BitMapValues[] = {\n")
+file = io.StringIO('\n#ifndef DEFINE_BITMAP\nextern const uint16_t BitMapValues[];\n#else\nconst uint16_t BitMapValues[] = {\n')
 file.seek(0, 2)
 offset = 0
 
@@ -67,6 +67,7 @@ for i in range(len(files)):
     if notLastFile:
         file.write('\n')
 
+print("#define BMP_LENGTH {:#x}".format(offset))
 file.seek(0)
 print(file.read(), end='')
 printFooter()

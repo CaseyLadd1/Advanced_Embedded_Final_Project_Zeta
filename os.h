@@ -74,6 +74,8 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value);
 // output: none
 void OS_Wait(Sema4Type *semaPt);
 
+int OS_Try(Sema4Type *semaPt);
+
 // ******** OS_Signal ************
 // increment semaphore
 // input:  pointer to a counting semaphore
@@ -84,6 +86,8 @@ void OS_Signal(Sema4Type *semaPt);
 // input:  pointer to a binary semaphore
 // output: none
 void OS_bWait(Sema4Type *semaPt);
+
+int OS_bTry(Sema4Type *semaPt);
 
 // ******** OS_bSignal ************
 // input:  pointer to a binary semaphore
