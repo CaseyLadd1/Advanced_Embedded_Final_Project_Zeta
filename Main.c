@@ -88,8 +88,8 @@ int UpdatePosition(uint16_t rawx, uint16_t rawy, jsDataType *data) {
   if (x < 0) {
     x = 0;
   }
-  if (y > 112 - CROSSSIZE) {
-    y = 112 - CROSSSIZE;
+  if (y > 112-1) {
+    y = 112-1;
   }
   if (y < 0) {
     y = 0;
@@ -389,6 +389,9 @@ int main(void) {
   NumCreated += OS_AddThread(&Consumer, 128, 1);
   NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
 	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
