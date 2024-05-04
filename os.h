@@ -82,6 +82,9 @@ int OS_Try(Sema4Type *semaPt);
 // output: none
 void OS_Signal(Sema4Type *semaPt);
 
+// Like OS_Signal, but for an arbitrary count.
+void OS_SignalN(Sema4Type *semaPt, unsigned int count);
+
 // ******** OS_bWait ************
 // input:  pointer to a binary semaphore
 // output: none

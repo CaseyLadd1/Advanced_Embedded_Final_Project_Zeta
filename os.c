@@ -277,6 +277,24 @@ void OS_Signal(Sema4Type *semaPt) {
   EndCritical(sr);
 }
 
+void OS_SignalN(Sema4Type *semaPt, unsigned int count) {
+  long sr = StartCritical();
+	for (int i = 0; i < count; i++) {
+  semaPt->Value++;
+#if blockSema
+  tcbType *pt;
+  if (semaPt->Value <= 0) {
+    pt = RunPt->next;
+    while (pt->blockPt != semaPt) {
+      pt = pt->next;
+    }
+    pt->blockPt = 0;
+  }
+#endif
+}
+  EndCritical(sr);
+}
+
 // ******** OS_InitSemaphore ************
 // initialize semaphore
 // input:  pointer to a semaphore

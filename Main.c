@@ -212,7 +212,6 @@ void Consumer(void) {
 // it executes some calculation related to the position of crosshair
 //******** CubeNumCalc ***************
 // foreground thread, calculates the virtual cube number for the crosshair
-// never blocks, never sleeps, never dies
 // inputs:  none
 // outputs: none
 
@@ -284,11 +283,6 @@ void Interpreter(void) {
 //--------------end of Task 5-----------------------------
 
 //------------------Task 6--------------------------------
-
-//************ PeriodicUpdater ***************
-// background thread, do some pseudo works to test if you can add multiple
-// periodic threads inputs:  none outputs: none
-void PeriodicUpdater(void) { PseudoCount++; }
 
 //************ Display ***************
 // foreground thread, do some pseudo works to test if you can add multiple
@@ -383,7 +377,6 @@ int main(void) {
   OS_AddSW1Task(&SW1Push, 4);
   OS_AddSW2Task(&SW2Push, 4);
   OS_AddPeriodicThread(&Producer, PERIOD, 3); // 2 kHz real time sampling of PD3
-  OS_AddPeriodicThread(&PeriodicUpdater, PSEUDOPERIOD, 3);
 
   NumCreated = 0;
   // create initial foreground threads
