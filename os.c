@@ -132,7 +132,7 @@ void SetInitialStack(int i) {
 void OS_Launch(unsigned long theTimeSlice) {
   NVIC_ST_RELOAD_R = theTimeSlice - 1; // reload value
   NVIC_ST_CTRL_R = 0x00000007;         // enable, core clock and interrupt arm
-  StartOS();                           // start on the first task
+	StartOS();                           // start on the first task
 }
 
 // ******** OS_Suspend ************
@@ -470,12 +470,15 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
 
 // Ms time system
 static uint32_t MSTime;
+static uint32_t blinktime;
 // ******** OS_ClearMsTime ************
 // sets the system time to zero
 // Inputs:  none
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void) { MSTime = 0; }
+void OS_Clearblinktime(void) { blinktime = 0; }
+
 
 // ******** OS_MsTime ************
 // reads the current time in msec
@@ -485,6 +488,7 @@ void OS_ClearMsTime(void) { MSTime = 0; }
 // It is ok to make the resolution to match the first call to
 // OS_AddPeriodicThread
 unsigned long OS_MsTime(void) { return MSTime; }
+unsigned long OS_blinktime(void) {return blinktime; }
 
 // Timers
 // ------------------------------------------------------------------------------

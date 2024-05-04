@@ -36,6 +36,8 @@ int16_t prevx, prevy; // Previous x and y values of the crosshair
 uint8_t select;       // joystick push
 uint8_t area[2];
 uint32_t PseudoCount;
+uint8_t started=0;
+uint8_t blinkon=1;
 
 unsigned long NumCreated;  // Number of foreground threads created
 unsigned long NumSamples;  // Incremented every ADC sample, in Producer
@@ -168,13 +170,20 @@ void ButtonWork(void) {
 // background threads execute once and return
 void SW1Push(void) {
   Button1PushTime = OS_Time();
-  if (OS_MsTime() > 20) { // debounce
+	if (OS_MsTime() > 50) {
+	if (started == 0){
+		started=1;
+		return;
+	}
+	if (started == 1){
+ // debounce
     if (OS_AddThread(&ButtonWork, 128, 4)) {
       OS_ClearMsTime();
       NumCreated++;
     }
     OS_ClearMsTime(); // at least 20ms between touches
-  }
+		}
+	}
 }
 
 //--------------end of Task 2-----------------------------
@@ -363,10 +372,51 @@ void CrossHair_Init(void) {
   BSP_Joystick_Input(&origin[0], &origin[1], &select);
 }
 
+void InstructionRoutine(void){
+					
+	BSP_LCD_DrawString(5, 1, "Instructions:", LCD_WHITE);
+	BSP_LCD_DrawString(1, 3, "Use Joystick to Aim", LCD_WHITE);
+	BSP_LCD_DrawString(2, 5, "Press S1 to FIRE", LCD_WHITE);
+	BSP_LCD_DrawString(3, 7, "Put pressure on", LCD_WHITE);
+	BSP_LCD_DrawString(2, 8, "joystick to RELOAD", LCD_WHITE);
+	//blink this
+	BSP_LCD_DrawString(2, 10, "PRESS S1 TO START", LCD_WHITE);
+	//blink this
+	while(started==0){
+	}
+		BSP_LCD_FillScreen(0);
+	  NumCreated += OS_AddThread(&Interpreter, 128, 2);
+    NumCreated += OS_AddThread(&Consumer, 128, 1);
+    NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
+	  NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
+	  NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	  NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	  NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	  NumCreated += OS_AddThread(&DemonThread, 128, 4);	
+	  OS_Kill();
+}
+
+void TitleScreenRoutine(void){
+	offsetTest();
+	//blink this//
+	BSP_LCD_DrawString(2, 10, "PRESS S1 TO START", LCD_WHITE);
+	//blink this
+	while (started==0){
+	}
+		BSP_LCD_FillScreen(0);
+		started=0;
+		OS_Sleep(50);
+		NumCreated += OS_AddThread(&InstructionRoutine, 128, 2);
+	  OS_Kill();
+}
+
+
 //******************* Main Function**********
 int main(void) {
   OS_Init(); // initialize, disable interrupts
   Device_Init();
+	//move this later
+	//move this later
   CrossHair_Init();
 	RenderInit();
 	InitGameplay();
@@ -387,15 +437,15 @@ int main(void) {
 
   NumCreated = 0;
   // create initial foreground threads
-  NumCreated += OS_AddThread(&Interpreter, 128, 2);
-  NumCreated += OS_AddThread(&Consumer, 128, 1);
-  NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
-	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-
+ // NumCreated += OS_AddThread(&Interpreter, 128, 2);
+ // NumCreated += OS_AddThread(&Consumer, 128, 1);
+  //NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
+	//NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
+	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&TitleScreenRoutine, 128, 4);
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }

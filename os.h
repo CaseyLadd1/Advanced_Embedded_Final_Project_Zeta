@@ -199,6 +199,7 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop);
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void);
+void OS_Clearblinktime(void);
 
 // ******** OS_MsTime ************
 // reads the current time in msec (from Lab 1)
@@ -208,6 +209,8 @@ void OS_ClearMsTime(void);
 // It is ok to make the resolution to match the first call to
 // OS_AddPeriodicThread
 unsigned long OS_MsTime(void);
+unsigned long OS_blinktime(void);
+
 
 //******** OS_Launch ***************
 // start the scheduler, enable interrupts
