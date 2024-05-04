@@ -1387,6 +1387,17 @@ void BSP_LCD_Message(int device, int line, int col, char *string,
   BSP_LCD_SetCursor(DecimalHPosition, StringVPosition);
   BSP_LCD_OutUDec4(value, LCD_WHITE);
 }
+										 
+// Same as BSP_LCD_Message, but with variable width integer rendering.
+void BSP_LCD_MessageVar(int device, int line, int col, char *string,
+                     unsigned int value) {
+  uint16_t StringVPosition, DecimalHPosition;
+  StringVPosition = device * 7 + line;
+  DecimalHPosition =
+      col + BSP_LCD_DrawString(col, StringVPosition, string, LCD_WHITE);
+  BSP_LCD_SetCursor(DecimalHPosition, StringVPosition);
+  BSP_LCD_OutUDec(value, LCD_WHITE);
+}
 
 //------------BSP_LCD_DrawCrosshaire-------------------
 // Draw a crosshair at the given coordinates

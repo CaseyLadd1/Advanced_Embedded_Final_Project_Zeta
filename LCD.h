@@ -289,6 +289,9 @@ void BSP_LCD_PlotIncrement(void);
 void BSP_LCD_Message(int device, int line, int col, char *string,
                      unsigned int value);
 
+void BSP_LCD_MessageVar(int device, int line, int col, char *string,
+                     unsigned int value);
+
 // Initial LCD in OS
 void BSP_LCD_OutputInit(void);
 
