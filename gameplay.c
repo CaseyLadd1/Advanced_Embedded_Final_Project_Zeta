@@ -3,7 +3,7 @@
 #define EMB_GAMEPLAY_C_INTERNAL
 #include "gameplay.h"
 #include "tm4c123gh6pm.h"
-#include "video.h"
+#include "rng/rng.h"
 //cursor values need to be passed into this section
 
 // todo: make semaphore.
@@ -12,8 +12,8 @@ static uint16_t lifecount;
 
 
 static void InitBlockArray(void) {
-	for (int bx = 0; bx < HORIZONTALNUM; bx++) {
-		for (int by = 0; by < VERTICALNUM; by++) {
+	for (uint8_t bx = 0; bx < HORIZONTALNUM; bx++) {
+		for (uint8_t by = 0; by < VERTICALNUM; by++) {
 			OS_InitSemaphore(&BlockArray[bx][by].BlockFree, 1);
 			OS_InitSemaphore(&BlockArray[bx][by].Touched, 0);
 			BlockArray[bx][by].position[0] = bx*16;
@@ -61,15 +61,71 @@ static void cocoademon_handler(void){
 	//checks RNG for cocoademon position, color, lifetime (4 RNG values total)
 }
 
+// For a newly-spawned block. Returns the two block indices (0-7) as a single int.
+static uint8_t FindOpenBlock(void) {
+	uint32_t rand;
+	uint8_t x, y;
+	int open = 0;
+	while (!open) {
+		rand = rng();
+		x = rand & 7u;
+		y = (rand >> 3) & 7u;
+		if (x >= HORIZONTALNUM || y >= VERTICALNUM) {
+			continue;
+		}
+		open = OS_bTry(&BlockArray[x][y].BlockFree);
+	}
+	return (y << 3) | x;
+}
+
+static uint8_t MoveToOpenBlock(uint8_t x, uint8_t y) {
+	int8_t newx = x, newy = y, dir;
+	int open = 0;
+	while (!open) {
+		dir = GetRandomDirection();
+		if (dir == 4) {
+			return (y << 3) | x;
+		}
+		// bit 0 of dir: interpret as x or y movement.
+		// bit 1 of dir: interpret as - or +.
+		newx = x + (dir & 1) * (1 - (dir & 2));
+		newy = y + (!(dir & 1)) * (1 - (dir & 2));
+		if (newx >= HORIZONTALNUM || newy >= VERTICALNUM || newx < 0 || newy < 0) {
+			continue;
+		}
+		open = OS_bTry(&BlockArray[newx][newy].BlockFree);
+	}
+	return (newy << 3) | newx;
+}
+
 void DemonThread(void){
+	// Sleep between 0 and 255 ms before appearing
+	OS_Sleep(rng() & 255u);
+	uint8_t pos = FindOpenBlock();
 	// For now, just run a very simplified version.
-	uint8_t blockx, blocky = 0;
-	// Mark block as not free.
-	OS_bWait(&BlockArray[blockx][blocky].BlockFree);
-	
-DrawSprite(blockx, blocky, 0, 0);
-OS_bWait(&BlockArray[blockx][blocky].Touched);
-ClearSprite(blockx, blocky);
+	uint8_t x, y, newx, newy;
+	x = pos & 7u;
+	y = (pos >> 3) & 7u;
+	DrawSprite(x, y, 0, 0);
+for (int i = 0; i < 1000; i++) {
+OS_bTry(&BlockArray[x][y].Touched);
+OS_Sleep(500);
+if (OS_bTry(&BlockArray[x][y].Touched)) {
+	OS_bSignal(&BlockArray[x][y].BlockFree);
+	ClearSprite(x, y);
+	break;
+}
+pos = MoveToOpenBlock(x, y);
+	newx = pos & 7u;
+	newy = (pos >> 3) & 7u;
+if (newx != x || newy != y) {
+	ClearSprite(x, y);
+	OS_bSignal(&BlockArray[x][y].BlockFree);
+	x = newx;
+y = newy;
+	DrawSprite(x, y, 0, 0);
+}
+}
 OS_Kill();
 	//runs as a thread for each active instance of cocoademon
 	//when lifetime=0 or is defeated (value passed from shot_handler), run OS_Kill()
