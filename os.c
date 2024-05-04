@@ -215,6 +215,10 @@ unsigned int OS_AddThread(void (*task)(void), unsigned long stackSize,
 // Outputs: Thread ID, number greater than zero
 unsigned long OS_Id(void) { return RunPt->id; }
 
+void OS_WakeupThread(unsigned long id) {
+	tcbs[id].sleepCt = 0;
+}
+
 // ******** OS_Wait ************
 // decrement semaphore
 // input:  pointer to a counting semaphore

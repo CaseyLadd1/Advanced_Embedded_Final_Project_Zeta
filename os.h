@@ -110,6 +110,9 @@ unsigned int OS_AddThread(void (*task)(void), unsigned long stackSize,
 // Outputs: Thread ID, number greater than zero
 unsigned long OS_Id(void);
 
+// Sets a thread's sleep count to zero.
+void OS_WakeupThread(unsigned long id);
+
 //******** OS_AddPeriodicThread ***************
 // add a background periodic task
 // typically this function receives the highest priority
