@@ -10,6 +10,7 @@
 #include "LCD.h"
 #include "FIFO.h"
 #include "os.h"
+#include "gameplay.h"
 
 static inline void _drawSprite_internal(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t offset) {
 	BSP_LCD_DrawBitmap(blockx*16, (blocky+1)*16-1, &BitMapValues[offset], 16, 16, direction);
@@ -17,6 +18,11 @@ static inline void _drawSprite_internal(uint8_t blockx, uint8_t blocky, uint8_t 
 
 static inline void _clearSprite_internal(uint8_t blockx, uint8_t blocky) {
 	BSP_LCD_FillRect(blockx*16, blocky*16, 16, 16, LCD_BLACK);
+}
+
+static inline void _updateAmmoLife_internal(uint8_t ammo, uint8_t life) {
+	BSP_LCD_MessageVar(1, 5, 2, "Life: ", life);
+	BSP_LCD_MessageVar(1, 5, 12, "Ammo: ", ammo);
 }
 
 void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t sprite) {
@@ -27,30 +33,39 @@ void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t spri
 	DrawFifo_Put((spriteMessage){
 		.blockx=blockx, .blocky=blocky,
 		.direction=direction,
-		.clear=0,
+		.command=0,
 		.sprite=sprite
 	});
 }
+
 void ClearSprite(uint8_t blockx, uint8_t blocky) {
 	if (blockx > HORIZONTALNUM || blocky > VERTICALNUM) {
 		return;
 	}
 	DrawFifo_Put((spriteMessage){
 		.blockx=blockx, .blocky=blocky,
-		.clear=1
+		.command=1
+	});
+}
+
+void UpdateAmmoLife() {
+	DrawFifo_Put((spriteMessage){
+		.command=2
 	});
 }
 
 extern unsigned long NumSamples;
 #define RUNLENGTH 600
 extern Sema4Type LCDFree;
-void SpriteRenderThread(void) {
+void RenderThread(void) {
 	while (NumSamples < RUNLENGTH) {
     spriteMessage data;
     DrawFifo_Get(&data);
     OS_bWait(&LCDFree);
-		if (data.clear) {
+		if (data.command & 1) {
 			_clearSprite_internal(data.blockx, data.blocky);
+		} else if (data.command & 2) {
+			_updateAmmoLife_internal(ammocount.Value, lifecount.Value);
 		} else {
 			_drawSprite_internal(data.blockx, data.blocky, data.direction, data.sprite);
 		}

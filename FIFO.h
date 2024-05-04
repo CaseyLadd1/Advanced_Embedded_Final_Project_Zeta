@@ -49,7 +49,8 @@ typedef struct {
 typedef struct {
 	uint8_t blockx, blocky;
 	uint8_t direction;
-	uint8_t clear; // TODO maybe put this in one of the bits of direction? For now it doesn't add size, but later.
+	// draw sprite = 0, clear sprite = 1, update life/ammo = 2
+	uint8_t command;
 	uint32_t sprite;
 } spriteMessage;
 

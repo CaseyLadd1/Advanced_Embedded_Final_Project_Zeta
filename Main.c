@@ -195,8 +195,8 @@ void Consumer(void) {
     BSP_LCD_DrawCrosshair(prevx, prevy, LCD_BLACK); // Draw a black crosshair
     BSP_LCD_DrawCrosshair(data.x, data.y, LCD_RED); // Draw a red crosshair
 
-    BSP_LCD_Message(1, 5, 3, "X: ", x);
-    BSP_LCD_Message(1, 5, 12, "Y: ", y);
+//    BSP_LCD_Message(1, 5, 3, "X: ", x);
+//    BSP_LCD_Message(1, 5, 12, "Y: ", y);
     ConsumerCount++;
     OS_bSignal(&LCDFree);
     prevx = data.x;
@@ -372,6 +372,7 @@ int main(void) {
 
   //********initialize communication channels
   JsFifo_Init();
+	UpdateAmmoLife();
 
   //*******attach background tasks***********
   OS_AddSW1Task(&SW1Push, 4);
@@ -383,7 +384,7 @@ int main(void) {
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&Consumer, 128, 1);
   NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
-	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
+	NumCreated += OS_AddThread(&RenderThread, 128, 3);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);

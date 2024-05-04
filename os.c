@@ -252,7 +252,7 @@ void OS_Wait(Sema4Type *semaPt) {
 int OS_Try(Sema4Type *semaPt) {
   long sr = StartCritical();
 	int retval = semaPt->Value;
-	 semaPt->Value -= (semaPt->Value > 0);
+	semaPt->Value -= (semaPt->Value > 0);
   EndCritical(sr);
 	return retval;
 }

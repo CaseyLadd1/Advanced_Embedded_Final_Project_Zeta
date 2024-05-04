@@ -24,7 +24,8 @@ extern block BlockArray[HORIZONTALNUM][VERTICALNUM];
 #else
 block BlockArray[HORIZONTALNUM][VERTICALNUM];
 #endif
-
+extern Sema4Type ammocount;
+extern Sema4Type lifecount;
 
 void InitGameplay(void);
 void DemonThread(void);
