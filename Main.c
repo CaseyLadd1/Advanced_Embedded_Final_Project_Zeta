@@ -162,6 +162,7 @@ void SW1Push(void) {
 // inputs:  none
 // outputs: none
 void Consumer(void) {
+	uint8_t bx, by;
   while (NumSamples < RUNLENGTH) {
     jsDataType data;
     JsFifo_Get(&data);
@@ -169,11 +170,17 @@ void Consumer(void) {
 
     BSP_LCD_DrawCrosshair(prevx, prevy, LCD_BLACK); // Draw a black crosshair
     BSP_LCD_DrawCrosshair(data.x, data.y, LCD_RED); // Draw a red crosshair
-
+		
+		OS_bSignal(&LCDFree);
+    bx = data.x / 16;
+    by = data.y / 16;
+	  if (!BlockArray[bx][by].BlockUnoccupied.Value) {
+			OS_bSignal(&BlockArray[bx][by].Touched);
+			OS_WakeupThread(BlockArray[bx][by].threadId);
+		}
 //    BSP_LCD_Message(1, 5, 3, "X: ", x);
 //    BSP_LCD_Message(1, 5, 12, "Y: ", y);
     ConsumerCount++;
-    OS_bSignal(&LCDFree);
     prevx = data.x;
     prevy = data.y;
   }
@@ -181,33 +188,6 @@ void Consumer(void) {
 }
 
 //--------------end of Task 3-----------------------------
-
-//------------------Task 4--------------------------------
-// foreground thread that runs without waiting or sleeping
-// it executes some calculation related to the position of crosshair
-//******** CubeNumCalc ***************
-// foreground thread, calculates the virtual cube number for the crosshair
-// inputs:  none
-// outputs: none
-
-void CubeNumCalc(void) {
-  uint16_t CurrentX, CurrentY;
-  while (1) {
-    if (NumSamples < RUNLENGTH) {
-      CurrentX = x;
-      CurrentY = y;
-      area[0] = CurrentX / 16;
-      area[1] = CurrentY / 16;
-			if (!BlockArray[area[0]][area[1]].BlockUnoccupied.Value) {
-				OS_bSignal(&BlockArray[area[0]][area[1]].Touched);
-				OS_WakeupThread(BlockArray[area[0]][area[1]].threadId);
-				OS_Suspend();
-			}
-      Calculation++;
-    }
-  }
-}
-//--------------end of Task 4-----------------------------
 
 //------------------Task 5--------------------------------
 // UART background ISR performs serial input/output
@@ -332,6 +312,11 @@ void CrossHair_Init(void) {
   BSP_Joystick_Input(&origin[0], &origin[1], &select);
 }
 
+// All it does is eternally suspend itself to ensure that the scheduler doesn't crash.
+void SuspendyThread(void) {
+	while (1) OS_Suspend();
+}
+
 //******************* Main Function**********
 int main(void) {
   OS_Init(); // initialize, disable interrupts
@@ -356,14 +341,15 @@ int main(void) {
 
   NumCreated = 0;
   // create initial foreground threads
-  NumCreated += OS_AddThread(&Interpreter, 128, 2);
+//  NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&Consumer, 128, 1);
-  NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
 	NumCreated += OS_AddThread(&RenderThread, 128, 3);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&SuspendyThread, 128, 5);
+	
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
