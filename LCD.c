@@ -1171,10 +1171,10 @@ void BSP_LCD_OutUDec(uint32_t n, int16_t textColor) {
   Message[Messageindex] = 0; // terminate
   BSP_LCD_DrawString(StX, StY, Message, textColor);
   StX = StX + Messageindex;
-  if (StX > 20) {
+/*  if (StX > 20) {
     StX = 20;
     BSP_LCD_DrawChar(StX * 6, StY * 10, '*', ST7735_RED, ST7735_BLACK, 1);
-  }
+  }*/
 }
 
 //-----------------------BSP_LCD_OutUDec4-----------------------
