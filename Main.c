@@ -389,7 +389,7 @@ int main(void) {
   NumCreated += OS_AddThread(&Consumer, 128, 1);
   NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
 	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
-	NumCreated += OS_AddThread(&cocoademon_instance, 128, 4);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes

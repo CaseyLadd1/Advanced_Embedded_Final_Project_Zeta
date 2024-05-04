@@ -11,7 +11,7 @@ static uint16_t ammocount;
 static uint16_t lifecount;
 
 
-void InitBlockArray(void) {
+static void InitBlockArray(void) {
 	for (int bx = 0; bx < HORIZONTALNUM; bx++) {
 		for (int by = 0; by < VERTICALNUM; by++) {
 			OS_InitSemaphore(&BlockArray[bx][by].BlockFree, 1);
@@ -30,7 +30,7 @@ void InitGameplay(void){
 	//establishes initial values of life, ammo
 }
 
-void shot_handler(void){
+void ShotHandler(void){
 	//called if shot button is pressed
 	//calls RNG to "waste" value, further randomizing user experience (1 RNG value total)
 	if(ammocount<=0){
@@ -46,8 +46,8 @@ void shot_handler(void){
 	  //return 1
 	}
 }
-
-void reload_handler(void){
+// Made these static for now.
+static void reload_handler(void){
 	//called if reload button is pressed
 	//get current ammo value
 	//calls RNG to "waste" value, further randomizing user experience (1 RNG value total if current ammo is odd, 2 if even, 3 if zero)
@@ -55,13 +55,13 @@ void reload_handler(void){
 	//return 1
 }
 
-void cocoademon_handler(void){
+static void cocoademon_handler(void){
 	//code goes here
 	//calls RNG to determine if a new cocoademon thread is created (1 RNG value total), returns 0 if false
 	//checks RNG for cocoademon position, color, lifetime (4 RNG values total)
 }
 
-void cocoademon_instance(void){
+void DemonThread(void){
 	// For now, just run a very simplified version.
 	uint8_t blockx, blocky = 0;
 	// Mark block as not free.

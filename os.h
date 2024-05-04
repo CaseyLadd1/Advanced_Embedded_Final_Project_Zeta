@@ -101,7 +101,7 @@ void OS_bSignal(Sema4Type *semaPt);
 //         priority, 0 is highest, 5 is the lowest
 // Outputs: 1 if successful, 0 if this thread can not be added
 // stack size must be divisable by 8 (aligned to double word boundary)
-int OS_AddThread(void (*task)(void), unsigned long stackSize,
+unsigned int OS_AddThread(void (*task)(void), unsigned long stackSize,
                  unsigned long priority);
 
 //******** OS_Id ***************

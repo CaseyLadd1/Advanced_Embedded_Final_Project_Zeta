@@ -23,6 +23,7 @@ block BlockArray[HORIZONTALNUM][VERTICALNUM];
 
 
 void InitGameplay(void);
-void cocoademon_instance(void);
+void DemonThread(void);
+void ShotHandler(void);
 
 #endif
