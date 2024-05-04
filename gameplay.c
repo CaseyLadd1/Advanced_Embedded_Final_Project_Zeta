@@ -121,9 +121,30 @@ pos = MoveToOpenBlock(x, y);
 if (newx != x || newy != y) {
 	ClearSprite(x, y);
 	OS_bSignal(&BlockArray[x][y].BlockFree);
+	//write code here for determining which sprite is drawn and in which direction//
+	//compare newx and newy to x and y before updating//
+	uint8_t facing;
+	uint16_t imgID;
+	if (newx - x > 0) {
+		facing=1;
+		imgID= 0x200;
+	}
+	if (newx - x < 0) {
+		facing=0;
+		imgID= 0x200;
+	}
+	if (newy - y > 0) {
+		facing=0;
+		imgID= 0x900;
+	}
+		if (newy - y < 0) {
+		facing=0;
+		imgID= 0x100;
+	}
+	//end new code//
 	x = newx;
-y = newy;
-	DrawSprite(x, y, 0, 0);
+	y = newy;
+	DrawSprite(x, y, facing, imgID);
 }
 }
 OS_Kill();
