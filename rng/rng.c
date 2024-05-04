@@ -37,5 +37,5 @@ uint32_t rng(void) {
  * For: ECE 4501: Advanced Embedded Computing Systems, Spring 2024
  */
 uint32_t GetRandomDirection(void) {
-    return rng() & ((uint32_t) 0x03);
+    return (((rng() & 255u) | 1) - 1) / 51;
 }
