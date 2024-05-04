@@ -20,7 +20,7 @@ static inline void _clearSprite_internal(uint8_t blockx, uint8_t blocky) {
 }
 
 void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t sprite) {
-	if (blockx > 7 || blocky > 7 || sprite >= BMP_LENGTH) {
+	if (blockx > HORIZONTALNUM || blocky > VERTICALNUM || sprite >= BMP_LENGTH) {
 		return;
 	}
 	// TODO: make blocking.
@@ -32,7 +32,7 @@ void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t spri
 	});
 }
 void ClearSprite(uint8_t blockx, uint8_t blocky) {
-	if (blockx > 7 || blocky > 7) {
+	if (blockx > HORIZONTALNUM || blocky > VERTICALNUM) {
 		return;
 	}
 	DrawFifo_Put((spriteMessage){

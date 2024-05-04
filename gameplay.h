@@ -3,10 +3,7 @@
 
 #include <stdint.h>
 #include "os.h"
-
-
-#define VERTICALNUM 8
-#define HORIZONTALNUM 8
+#include "video.h"
 
 typedef struct {
 uint8_t position[2];
