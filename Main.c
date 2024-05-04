@@ -136,31 +136,6 @@ void Producer(void) {
 
 //--------------end of Task 1-----------------------------
 
-//------------------Task 2--------------------------------
-// background thread executes with SW1 button
-// one foreground task created with button push
-// foreground treads run for 2 sec and die
-// ***********ButtonWork*************
-void ButtonWork(void) {
-  uint32_t StartTime, CurrentTime, ElapsedTime;
-  StartTime = OS_MsTime();
-  ElapsedTime = 0;
-  OS_bWait(&LCDFree);
-  BSP_LCD_FillScreen(BGCOLOR);
-  while (ElapsedTime < LIFETIME) {
-    CurrentTime = OS_MsTime();
-    ElapsedTime = CurrentTime - StartTime;
-    BSP_LCD_Message(0, 5, 0, "Life Time:", LIFETIME);
-    BSP_LCD_Message(1, 0, 0, "Horizontal Area:", area[0]);
-    BSP_LCD_Message(1, 1, 0, "Vertical Area:", area[1]);
-    BSP_LCD_Message(1, 2, 0, "Elapsed Time:", ElapsedTime);
-    OS_Sleep(50);
-  }
-  BSP_LCD_FillScreen(BGCOLOR);
-  Button1RespTime = OS_TimeDifference(Button1PushTime, OS_Time());
-  OS_bSignal(&LCDFree);
-  OS_Kill(); // done, OS does not return from a Kill
-}
 
 //************SW1Push*************
 // Called when SW1 Button pushed
@@ -169,7 +144,7 @@ void ButtonWork(void) {
 void SW1Push(void) {
   Button1PushTime = OS_Time();
   if (OS_MsTime() > 20) { // debounce
-    if (OS_AddThread(&ButtonWork, 128, 4)) {
+    if (OS_AddThread(&ShotHandler, 128, 4)) {
       OS_ClearMsTime();
       NumCreated++;
     }
@@ -340,7 +315,7 @@ void Restart(void) {
 void SW2Push(void) {
   Button2PushTime = OS_Time();
   if (OS_MsTime() > 20) { // debounce
-    if (OS_AddThread(&Restart, 128, 4)) {
+    if (OS_AddThread(ReloadHandler, 128, 4)) {
       OS_ClearMsTime();
       NumCreated++;
     }

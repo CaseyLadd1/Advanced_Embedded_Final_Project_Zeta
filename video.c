@@ -20,9 +20,16 @@ static inline void _clearSprite_internal(uint8_t blockx, uint8_t blocky) {
 	BSP_LCD_FillRect(blockx*16, blocky*16, 16, 16, LCD_BLACK);
 }
 
-static inline void _updateAmmoLife_internal(uint8_t ammo, uint8_t life) {
-	BSP_LCD_MessageVar(1, 5, 2, "Life: ", life);
-	BSP_LCD_MessageVar(1, 5, 12, "Ammo: ", ammo);
+static inline void _updateAmmoLife_internal(long ammo, uint8_t life, uint8_t score) {
+	BSP_LCD_MessageVar(1, 5, 0, "HP: ", life);
+	BSP_LCD_MessageVar(1, 5, 7, "PTS: ", score);
+	if (ammo >= 0) {
+	  BSP_LCD_MessageVar(1, 5, 15, "A: ", ammo);
+		BSP_LCD_MessageVar(1, 5, 19, "/", MAX_AMMO);
+	} else {
+		BSP_LCD_MessageVar(1, 5, 15, "A: R/", MAX_AMMO);
+	}
+	
 }
 
 void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t sprite) {
@@ -65,7 +72,7 @@ void RenderThread(void) {
 		if (data.command & 1) {
 			_clearSprite_internal(data.blockx, data.blocky);
 		} else if (data.command & 2) {
-			_updateAmmoLife_internal(ammocount.Value, lifecount.Value);
+			_updateAmmoLife_internal(ammocount.Value, lifecount.Value, score.Value);
 		} else {
 			_drawSprite_internal(data.blockx, data.blocky, data.direction, data.sprite);
 		}

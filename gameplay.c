@@ -22,6 +22,8 @@ const uint32_t DeathSequenceLen = sizeof(DeathSequence) / sizeof(uint32_t);
 // todo: make semaphore.
 Sema4Type ammocount;
 Sema4Type lifecount;
+Sema4Type levelcount;
+Sema4Type score;
 
 static void InitBlockArray(void) {
   for (uint8_t bx = 0; bx < HORIZONTALNUM; bx++) {
@@ -37,27 +39,46 @@ static void InitBlockArray(void) {
 
 void InitGameplay(void) {
   InitBlockArray();
-  OS_InitSemaphore(&ammocount, 6);
-	OS_InitSemaphore(&lifecount, 5);
-  // code goes here
-  // establishes initial values of life, ammo
+  OS_InitSemaphore(&ammocount, MAX_AMMO);
+	OS_InitSemaphore(&lifecount, MAX_LIFE);
+	OS_InitSemaphore(&levelcount, 0);
+	OS_InitSemaphore(&score, 0);
 }
 
 void ShotHandler(void) {
   // called if shot button is pressed
   // calls RNG to "waste" value, further randomizing user experience (1 RNG
   // value total)
-  if (!OS_Try(&ammocount)) {
+  /*if (OS_Try(&ammocount) <= 0) {
     // if no ammo, announce "RELOAD" and return 0
-  }
+  }*/
+	OS_Kill();
 }
-// Made these static for now.
-static void reload_handler(void) {
+
+void ReloadHandler(void) {
   // called if reload button is pressed
-  // get current ammo value
-  // calls RNG to "waste" value, further randomizing user experience (1 RNG
-  // value total if current ammo is odd, 2 if even, 3 if zero) set ammo = 6 and
-  // freeze user inputs for a time return 1
+	long prevAmmo = ammocount.Value;
+	if (prevAmmo == 6) {
+		OS_Kill();
+	}
+	OS_InitSemaphore(&ammocount, -1);
+	UpdateAmmoLife();
+	// Calculate how much to delay.
+	uint16_t delay = 0;
+	// Make delay increase as you get lower on ammo.
+	for (int i = 6; i > prevAmmo; i--) {
+		delay += rng() & 127;
+	}
+	for (int i = 4; i > prevAmmo; i--) {
+		delay += rng() & 127;
+	}
+	for (int i = 2; i > prevAmmo; i--) {
+		delay += rng() & 127;
+	}
+	OS_Sleep(delay);
+	OS_InitSemaphore(&ammocount, 6);
+	UpdateAmmoLife();
+	OS_Kill();
 }
 
 static void cocoademon_handler(void) {
@@ -121,7 +142,9 @@ static void RunShootSequence(uint8_t x, uint8_t y) {
 	for (int i = 0; i < ShootSequenceLen; i++) {
 		DrawSprite(x, y, 0, ShootSequence[i]);
 		OS_Sleep(200+200/(i+1) + 200 * (i == ShootSequenceLen - 1));
-		if (OS_bTry(&BlockArray[x][y].Touched)) {
+		if (OS_bTry(&BlockArray[x][y].Touched) && OS_Try(&ammocount) > 0) {
+			OS_Signal(&score);
+			UpdateAmmoLife();
       // If we have, start the death sequence.
       RunDeathSequence(x, y);
     }
@@ -150,7 +173,9 @@ void DemonThread(void) {
     OS_Sleep(500 + (rng() & 255));
 
     // Check if we have been touched.
-    if (OS_bTry(&BlockArray[x][y].Touched)) {
+    if (OS_bTry(&BlockArray[x][y].Touched) && OS_Try(&ammocount) > 0) {
+			OS_Signal(&score);
+			UpdateAmmoLife();
       // If we have, start the death sequence.
       RunDeathSequence(x, y);
     }

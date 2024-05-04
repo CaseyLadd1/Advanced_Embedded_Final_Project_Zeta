@@ -5,6 +5,9 @@
 #include "os.h"
 #include "video.h"
 
+#define MAX_LIFE 5
+#define MAX_AMMO 6
+
 // Free and Unoccupied have subtly different meanings here.
 // A block is Free if it is not currently allocated by a thread.
 // A block is Unoccupied if there is not currently a sprite drawn in it.
@@ -26,9 +29,12 @@ block BlockArray[HORIZONTALNUM][VERTICALNUM];
 #endif
 extern Sema4Type ammocount;
 extern Sema4Type lifecount;
+extern Sema4Type scorecount;
+extern Sema4Type score;
 
 void InitGameplay(void);
 void DemonThread(void);
 void ShotHandler(void);
+void ReloadHandler(void);
 
 #endif
