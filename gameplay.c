@@ -75,7 +75,7 @@ void ReloadHandler(void) {
 	for (int i = 2; i > prevAmmo; i--) {
 		delay += rng() & 127;
 	}
-	OS_Sleep(delay);
+	OS_Sleep(delay*2);
 	OS_InitSemaphore(&ammocount, 6);
 	UpdateAmmoLife();
 	OS_Kill();
