@@ -16,8 +16,9 @@ static void InitBlockArray(void) {
 		for (uint8_t by = 0; by < VERTICALNUM; by++) {
 			OS_InitSemaphore(&BlockArray[bx][by].BlockFree, 1);
 			OS_InitSemaphore(&BlockArray[bx][by].Touched, 0);
-			BlockArray[bx][by].position[0] = bx*16;
-			BlockArray[bx][by].position[0] = by*16;
+			OS_InitSemaphore(&BlockArray[bx][by].BlockUnoccupied, 1);
+//			BlockArray[bx][by].position[0] = bx*16;
+//			BlockArray[bx][by].position[0] = by*16;
 		}
 	}
 }
@@ -95,6 +96,7 @@ static uint8_t MoveToOpenBlock(uint8_t x, uint8_t y) {
 		}
 		open = OS_bTry(&BlockArray[newx][newy].BlockFree);
 	}
+	
 	return (newy << 3) | newx;
 }
 
@@ -109,10 +111,13 @@ void DemonThread(void){
 	DrawSprite(x, y, 0, 0);
 for (int i = 0; i < 1000; i++) {
 OS_bTry(&BlockArray[x][y].Touched);
+BlockArray[x][y].threadId = OS_Id();
+OS_bTry(&BlockArray[x][y].BlockUnoccupied);
 OS_Sleep(500);
 if (OS_bTry(&BlockArray[x][y].Touched)) {
-	OS_bSignal(&BlockArray[x][y].BlockFree);
+	OS_bSignal(&BlockArray[x][y].BlockUnoccupied);
 	ClearSprite(x, y);
+	OS_bSignal(&BlockArray[x][y].BlockFree);
 	break;
 }
 pos = MoveToOpenBlock(x, y);
@@ -120,32 +125,33 @@ pos = MoveToOpenBlock(x, y);
 	newy = (pos >> 3) & 7u;
 if (newx != x || newy != y) {
 	ClearSprite(x, y);
-	OS_bSignal(&BlockArray[x][y].BlockFree);
+	OS_bSignal(&BlockArray[x][y].BlockUnoccupied);
+	
 	//write code here for determining which sprite is drawn and in which direction//
 	//compare newx and newy to x and y before updating//
 	uint8_t facing;
 	uint16_t imgID;
 	if (newx - x > 0) {
 		facing=1;
-		imgID= 0x200;
+		imgID= BMP_1_3_CACO_SIDE_OFFSET;
 	}
 	if (newx - x < 0) {
 		facing=0;
-		imgID= 0x200;
+		imgID= BMP_1_3_CACO_SIDE_OFFSET;
 	}
 	if (newy - y > 0) {
 		facing=0;
-		imgID= 0x900;
+		imgID= BMP_2_2_CACO_FRONT_OFFSET;
 	}
 		if (newy - y < 0) {
 		facing=0;
-		imgID= 0x100;
+		imgID= BMP_1_2_CAC_FACE_BACC_OFFSET;
 	}
-	//end new code//
+	DrawSprite(newx, newy, facing, imgID);
+}
+OS_bSignal(&BlockArray[x][y].BlockFree);
 	x = newx;
 	y = newy;
-	DrawSprite(x, y, facing, imgID);
-}
 }
 OS_Kill();
 	//runs as a thread for each active instance of cocoademon

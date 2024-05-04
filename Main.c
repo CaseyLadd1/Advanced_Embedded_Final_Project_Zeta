@@ -224,8 +224,9 @@ void CubeNumCalc(void) {
       CurrentY = y;
       area[0] = CurrentX / 16;
       area[1] = CurrentY / 16;
-			if (!BlockArray[area[0]][area[1]].BlockFree.Value) {
+			if (!BlockArray[area[0]][area[1]].BlockUnoccupied.Value) {
 				OS_bSignal(&BlockArray[area[0]][area[1]].Touched);
+				OS_WakeupThread(BlockArray[area[0]][area[1]].threadId);
 			}
       Calculation++;
     }
