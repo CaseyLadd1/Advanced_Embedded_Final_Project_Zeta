@@ -227,6 +227,7 @@ void CubeNumCalc(void) {
 			if (!BlockArray[area[0]][area[1]].BlockUnoccupied.Value) {
 				OS_bSignal(&BlockArray[area[0]][area[1]].Touched);
 				OS_WakeupThread(BlockArray[area[0]][area[1]].threadId);
+				OS_Suspend();
 			}
       Calculation++;
     }
