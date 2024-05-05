@@ -38,5 +38,6 @@ void DemonThread(void);
 void ShotHandler(void);
 void ReloadHandler(void);
 void LevelStart(void);
+void TitleScreenRoutine(void);
 
 #endif

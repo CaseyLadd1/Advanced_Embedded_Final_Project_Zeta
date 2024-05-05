@@ -33,13 +33,59 @@ static inline void _updateAmmoLife_internal(long ammo, uint8_t life, uint8_t sco
 	
 }
 
-static inline void _drawLevelBanner_internal(uint8_t levelnum) {
-	BSP_LCD_MessageVar(0, 2, 7, "Level ", levelnum);
+static void _promptS1_internal(void) {
 	BSP_LCD_DrawString(0, 10, "Press S1 to continue.", LCD_WHITE);
 }
 
-static inline void _clearLevelBanner_internal() {
+static inline void _drawLevelBanner_internal(uint8_t levelnum) {
+	BSP_LCD_MessageVar(0, 2, 7, "Level ", levelnum);
+	_promptS1_internal();
+}
+
+static inline void _clearPlayArea_internal() {
 	BSP_LCD_FillRect(0, 0, 127, 111, LCD_BLACK);
+}
+
+static void _drawTitle_internal(void) {
+	BSP_LCD_DrawBitmap(8*1, 16*2, &BitMapValues[0x1000], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*3, 16*2, &BitMapValues[0x1100], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*5, 16*2, &BitMapValues[0x1200], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*7, 16*2, &BitMapValues[0x1300], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*9, 16*2, &BitMapValues[0x1400], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*11, 16*2, &BitMapValues[0x1500], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*13, 16*2, &BitMapValues[0x1600], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*1, 16*3, &BitMapValues[0x1800], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*3, 16*3, &BitMapValues[0x1900], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*5, 16*3, &BitMapValues[0x1a00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*7, 16*3, &BitMapValues[0x1b00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*9, 16*3, &BitMapValues[0x1c00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*11, 16*3, &BitMapValues[0x1d00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*13, 16*3, &BitMapValues[0x1e00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*1, 16*4, &BitMapValues[0x1f00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*3, 16*4, &BitMapValues[0x2000], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*5, 16*4, &BitMapValues[0x2100], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*7, 16*4, &BitMapValues[0x2200], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*9, 16*4, &BitMapValues[0x2300], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*11, 16*4, &BitMapValues[0x2400], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*13, 16*4, &BitMapValues[0x2500], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*1, 16*5, &BitMapValues[0x2600], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*3, 16*5, &BitMapValues[0x2700], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*5, 16*5, &BitMapValues[0x2800], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*7, 16*5, &BitMapValues[0x2900], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*9, 16*5, &BitMapValues[0x2a00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*11, 16*5, &BitMapValues[0x2b00], 16, 16, 0);
+	BSP_LCD_DrawBitmap(8*13, 16*5, &BitMapValues[0x2c00], 16, 16, 0);
+}
+
+static void _drawInstructions_internal(void) {
+	BSP_LCD_DrawString(0, 0, "Instructions:", LCD_WHITE);
+	BSP_LCD_DrawString(2, 2, "Use Joystick to AIM", LCD_WHITE);
+	BSP_LCD_DrawString(2, 3, "Press S1 to FIRE", LCD_WHITE);
+	BSP_LCD_DrawString(2, 4, "Press S2 to RELOAD", LCD_WHITE);
+	BSP_LCD_DrawString(2, 5, "Press Joystick to", LCD_WHITE);
+	BSP_LCD_DrawString(13, 6, "RESTART", LCD_WHITE);
+	//blink this
+	_promptS1_internal();
 }
 
 void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t sprite) {
@@ -75,9 +121,27 @@ void DrawLevelBanner(void) {
 		.command=3
 	});
 }
-void ClearLevelBanner(void) {
+void ClearPlayArea(void) {
 	DrawFifo_Put((spriteMessage){
 		.command=4
+	});
+}
+
+void ClearScreen(void) {
+	DrawFifo_Put((spriteMessage){
+		.command=5
+	});
+}
+
+void DrawTitle(void) {
+	DrawFifo_Put((spriteMessage){
+		.command=6
+	});
+}
+
+void DrawInstructions(void) {
+	DrawFifo_Put((spriteMessage){
+		.command=7
 	});
 }
 
@@ -96,7 +160,14 @@ void RenderThread(void) {
 		} else if (data.command == 3) {
 			_drawLevelBanner_internal(levelcount.Value);
 		} else if (data.command == 4) {
-			_clearLevelBanner_internal();
+			_clearPlayArea_internal();
+		} else if (data.command == 5) {
+			BSP_LCD_FillScreen(LCD_BLACK);
+		} else if (data.command == 6) {
+			_drawTitle_internal();
+			_promptS1_internal();
+		} else if (data.command == 7) {
+			_drawInstructions_internal();
 		} else {
 			_drawSprite_internal(data.blockx, data.blocky, data.direction, data.sprite);
 		}
@@ -121,67 +192,4 @@ void ShowSpriteTest(void) {
 			DrawSprite(bx, by, 0, 0x100*(3*8+7*(by-3)+bx));
 		}
 	}
-}
-
-void offsetTest(void) {
-	BSP_LCD_DrawBitmap(8*1, 16*2, &BitMapValues[0x1000], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*3, 16*2, &BitMapValues[0x1100], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*5, 16*2, &BitMapValues[0x1200], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*7, 16*2, &BitMapValues[0x1300], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*9, 16*2, &BitMapValues[0x1400], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*11, 16*2, &BitMapValues[0x1500], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*13, 16*2, &BitMapValues[0x1600], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*1, 16*3, &BitMapValues[0x1800], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*3, 16*3, &BitMapValues[0x1900], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*5, 16*3, &BitMapValues[0x1a00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*7, 16*3, &BitMapValues[0x1b00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*9, 16*3, &BitMapValues[0x1c00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*11, 16*3, &BitMapValues[0x1d00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*13, 16*3, &BitMapValues[0x1e00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*1, 16*4, &BitMapValues[0x1f00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*3, 16*4, &BitMapValues[0x2000], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*5, 16*4, &BitMapValues[0x2100], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*7, 16*4, &BitMapValues[0x2200], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*9, 16*4, &BitMapValues[0x2300], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*11, 16*4, &BitMapValues[0x2400], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*13, 16*4, &BitMapValues[0x2500], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*1, 16*5, &BitMapValues[0x2600], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*3, 16*5, &BitMapValues[0x2700], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*5, 16*5, &BitMapValues[0x2800], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*7, 16*5, &BitMapValues[0x2900], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*9, 16*5, &BitMapValues[0x2a00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*11, 16*5, &BitMapValues[0x2b00], 16, 16, 0);
-	BSP_LCD_DrawBitmap(8*13, 16*5, &BitMapValues[0x2c00], 16, 16, 0);
-}
-
-void DrawTitle(void){
-	DrawSprite(1,2,0, 0x1000);
-	DrawSprite(2,2,0, 0x1100);
-	DrawSprite(3,2,0, 0x1200);
-	DrawSprite(4,2,0, 0x1300);
-	DrawSprite(5,2,0, 0x1400);
-	DrawSprite(6,2,0, 0x1500);
-	DrawSprite(7,2,0, 0x1600);
-	DrawSprite(1,3,0, 0x1800);
-	DrawSprite(2,3,0, 0x1900);
-	DrawSprite(3,3,0, 0x1a00);
-	DrawSprite(4,3,0, 0x1b00);
-	DrawSprite(5,3,0, 0x1c00);
-	DrawSprite(6,3,0, 0x1d00);
-	DrawSprite(7,3,0, 0x1e00);
-	DrawSprite(1,4,0, 0x1f00);
-	DrawSprite(2,4,0, 0x2000);
-	DrawSprite(3,4,0, 0x2100);
-	DrawSprite(4,4,0, 0x2200);
-	DrawSprite(5,4,0, 0x2300);
-	DrawSprite(6,4,0, 0x2400);
-	DrawSprite(7,4,0, 0x2500);
-	DrawSprite(1,5,0, 0x2600);
-	DrawSprite(2,5,0, 0x2700);
-	DrawSprite(3,5,0, 0x2800);
-	DrawSprite(4,5,0, 0x2900);
-	DrawSprite(5,5,0, 0x2a00);
-	DrawSprite(6,5,0, 0x2b00);
-	DrawSprite(7,5,0, 0x2c00);
-
 }

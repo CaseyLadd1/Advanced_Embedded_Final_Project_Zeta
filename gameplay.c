@@ -49,6 +49,27 @@ void InitGameplay(void) {
 	OS_InitSemaphore(&levelRunning, 0);
 }
 
+static void AwaitS1(void) {
+	OS_bTry(&levelRunning);
+	OS_bWait(&levelRunning);
+	OS_bSignal(&levelRunning);
+}
+
+void Consumer(void);
+void TitleScreenRoutine(void){
+	ClearScreen();
+	DrawTitle();
+	AwaitS1();
+	ClearScreen();
+	DrawInstructions();
+	AwaitS1();
+	ClearScreen();
+	UpdateAmmoLife();
+	OS_AddThread(&LevelStart, 128, 1);
+	OS_AddThread(&Consumer, 128, 1);
+	OS_Kill();
+}
+
 void ShotHandler(void) {
 	OS_bSignal(&levelRunning);
   // called if shot button is pressed
@@ -86,13 +107,6 @@ void ReloadHandler(void) {
 	OS_InitSemaphore(&ammocount, MAX_AMMO);
 	UpdateAmmoLife();
 	OS_Kill();
-}
-
-static void cocoademon_handler(void) {
-  // code goes here
-  // calls RNG to determine if a new cocoademon thread is created (1 RNG value
-  // total), returns 0 if false checks RNG for cocoademon position, color,
-  // lifetime (4 RNG values total)
 }
 
 // For a newly-spawned block. Returns the two block indices (0-7) as a single
@@ -169,11 +183,9 @@ void LevelStart(void) {
 	// Display next-level banner.
 	DrawLevelBanner();
 	// Await S1 press.
-	OS_bTry(&levelRunning);
-	OS_bWait(&levelRunning);
-	OS_bSignal(&levelRunning);
+	AwaitS1();
 	// Clear the level banner
-	ClearLevelBanner();
+	ClearPlayArea();
 	uint8_t numSpawn = 2 + (rng() & 3);
 	if (levelcount.Value > 10) {
 		// Make things a bit harder;

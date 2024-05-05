@@ -33,10 +33,7 @@ uint16_t origin[2];   // The original ADC value of x,y if the joystick is not
 int16_t x = 63;       // horizontal position of the crosshair, initially 63
 int16_t y = 63;       // vertical position of the crosshair, initially 63
 int16_t prevx, prevy; // Previous x and y values of the crosshair
-uint8_t started=0;
-uint8_t blinkon=1;
 
-unsigned long NumCreated;  // Number of foreground threads created
 unsigned long NumSamples;  // Incremented every ADC sample, in Producer
 unsigned long UpdateWork;  // Incremented every update on position values
 unsigned long Calculation; // Incremented every cube number calculation
@@ -150,10 +147,8 @@ void SW1Push(void) {
   if (OS_MsTime() > 20) { // debounce
     if (OS_AddThread(&ShotHandler, 128, 4)) {
       OS_ClearMsTime();
-      NumCreated++;
     }
     OS_ClearMsTime(); // at least 20ms between touches
-		}
 	}
 }
 
@@ -211,9 +206,6 @@ void Interpreter(void) {
     if (!(strcmp(command, "NumSamples"))) {
       UART_OutString("NumSamples: ");
       UART_OutUDec(NumSamples);
-    } else if (!(strcmp(command, "NumCreated"))) {
-      UART_OutString("NumCreated: ");
-      UART_OutUDec(NumCreated);
     } else if (!(strcmp(command, "MaxJitter"))) {
       UART_OutString("MaxJitter: ");
       UART_OutUDec(MaxJitter);
@@ -271,7 +263,7 @@ void Restart(void) {
   MaxJitter = 0; // in 1us units
   x = 63;
   y = 63;
-  NumCreated += OS_AddThread(&Consumer, 128, 1);
+  OS_AddThread(&Consumer, 128, 1);
   OS_Kill(); // done, OS does not return from a Kill
 }
 
@@ -284,7 +276,6 @@ void SW2Push(void) {
   if (OS_MsTime() > 20) { // debounce
     if (OS_AddThread(ReloadHandler, 128, 4)) {
       OS_ClearMsTime();
-      NumCreated++;
     }
     OS_ClearMsTime(); // at least 20ms between touches
   }
@@ -305,44 +296,6 @@ void SuspendyThread(void) {
 	while (1) OS_Suspend();
 }
 
-void InstructionRoutine(void){
-					
-	BSP_LCD_DrawString(5, 1, "Instructions:", LCD_WHITE);
-	BSP_LCD_DrawString(1, 3, "Use Joystick to Aim", LCD_WHITE);
-	BSP_LCD_DrawString(2, 5, "Press S1 to FIRE", LCD_WHITE);
-	BSP_LCD_DrawString(3, 7, "Put pressure on", LCD_WHITE);
-	BSP_LCD_DrawString(2, 8, "joystick to RELOAD", LCD_WHITE);
-	//blink this
-	BSP_LCD_DrawString(2, 10, "PRESS S1 TO START", LCD_WHITE);
-	//blink this
-	while(started==0){
-	}
-		BSP_LCD_FillScreen(0);
-	  NumCreated += OS_AddThread(&Interpreter, 128, 2);
-    NumCreated += OS_AddThread(&Consumer, 128, 1);
-    NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
-	  NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
-	  NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	  NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	  NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	  NumCreated += OS_AddThread(&DemonThread, 128, 4);	
-	  OS_Kill();
-}
-
-void TitleScreenRoutine(void){
-	offsetTest();
-	//blink this//
-	BSP_LCD_DrawString(2, 10, "PRESS S1 TO START", LCD_WHITE);
-	//blink this
-	while (started==0){
-	}
-		BSP_LCD_FillScreen(0);
-		started=0;
-		OS_Sleep(50);
-		NumCreated += OS_AddThread(&InstructionRoutine, 128, 2);
-	  OS_Kill();
-}
-
 
 //******************* Main Function**********
 int main(void) {
@@ -360,31 +313,17 @@ int main(void) {
 
   //********initialize communication channels
   JsFifo_Init();
-	UpdateAmmoLife();
 
   //*******attach background tasks***********
   OS_AddSW1Task(&SW1Push, 4);
   OS_AddSW2Task(&SW2Push, 4);
   OS_AddPeriodicThread(&Producer, PERIOD, 3); // 2 kHz real time sampling of PD3
 
-  NumCreated = 0;
   // create initial foreground threads
-//  NumCreated += OS_AddThread(&Interpreter, 128, 2);
-  NumCreated += OS_AddThread(&Consumer, 128, 1);
-	NumCreated += OS_AddThread(&RenderThread, 128, 3);
-	NumCreated += OS_AddThread(&SuspendyThread, 128, 5);
-	NumCreated += OS_AddThread(&LevelStart, 128, 1);
-	
-
- // NumCreated += OS_AddThread(&Interpreter, 128, 2);
- // NumCreated += OS_AddThread(&Consumer, 128, 1);
-  //NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
-	//NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
-	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	//NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&TitleScreenRoutine, 128, 4);
+//  OS_AddThread(&Interpreter, 128, 2);
+	OS_AddThread(&RenderThread, 128, 3);
+	OS_AddThread(&SuspendyThread, 128, 5);
+	OS_AddThread(&TitleScreenRoutine, 128, 4);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
