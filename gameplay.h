@@ -30,11 +30,13 @@ block BlockArray[HORIZONTALNUM][VERTICALNUM];
 extern Sema4Type ammocount;
 extern Sema4Type lifecount;
 extern Sema4Type scorecount;
+extern Sema4Type levelcount;
 extern Sema4Type score;
 
 void InitGameplay(void);
 void DemonThread(void);
 void ShotHandler(void);
 void ReloadHandler(void);
+void LevelStart(void);
 
 #endif

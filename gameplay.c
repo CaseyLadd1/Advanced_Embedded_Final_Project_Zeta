@@ -24,6 +24,8 @@ Sema4Type ammocount;
 Sema4Type lifecount;
 Sema4Type levelcount;
 Sema4Type score;
+Sema4Type livingDemons;
+Sema4Type levelRunning;
 
 static void InitBlockArray(void) {
   for (uint8_t bx = 0; bx < HORIZONTALNUM; bx++) {
@@ -43,9 +45,12 @@ void InitGameplay(void) {
 	OS_InitSemaphore(&lifecount, MAX_LIFE);
 	OS_InitSemaphore(&levelcount, 0);
 	OS_InitSemaphore(&score, 0);
+	OS_InitSemaphore(&livingDemons, 0);
+	OS_InitSemaphore(&levelRunning, 0);
 }
 
 void ShotHandler(void) {
+	OS_bSignal(&levelRunning);
   // called if shot button is pressed
   // calls RNG to "waste" value, further randomizing user experience (1 RNG
   // value total)
@@ -58,7 +63,9 @@ void ShotHandler(void) {
 void ReloadHandler(void) {
   // called if reload button is pressed
 	long prevAmmo = ammocount.Value;
-	if (prevAmmo == 6) {
+	long running = levelRunning.Value;
+	// Don't reload if we're paused or if the ammo is already max.
+	if (prevAmmo == MAX_AMMO || !running) {
 		OS_Kill();
 	}
 	OS_InitSemaphore(&ammocount, -1);
@@ -66,17 +73,17 @@ void ReloadHandler(void) {
 	// Calculate how much to delay.
 	uint16_t delay = 0;
 	// Make delay increase as you get lower on ammo.
-	for (int i = 6; i > prevAmmo; i--) {
+	for (int i = MAX_AMMO; i > prevAmmo; i--) {
 		delay += rng() & 127;
 	}
-	for (int i = 4; i > prevAmmo; i--) {
+	for (int i = MAX_AMMO-2; i > prevAmmo; i--) {
 		delay += rng() & 127;
 	}
-	for (int i = 2; i > prevAmmo; i--) {
+	for (int i = MAX_AMMO-4; i > prevAmmo; i--) {
 		delay += rng() & 127;
 	}
 	OS_Sleep(delay*2);
-	OS_InitSemaphore(&ammocount, 6);
+	OS_InitSemaphore(&ammocount, MAX_AMMO);
 	UpdateAmmoLife();
 	OS_Kill();
 }
@@ -135,13 +142,16 @@ static void RunDeathSequence(uint8_t x, uint8_t y) {
 	}
 	ClearSprite(x, y);
   OS_bSignal(&BlockArray[x][y].BlockFree);
+	if (OS_Try(&livingDemons) == 1) {
+		OS_AddThread(&LevelStart, 128, 1);
+	}
 	OS_Kill();
 }
 
 static void RunShootSequence(uint8_t x, uint8_t y) {
 	for (int i = 0; i < ShootSequenceLen; i++) {
 		DrawSprite(x, y, 0, ShootSequence[i]);
-		OS_Sleep(200+200/(i+1) + 200 * (i == ShootSequenceLen - 1));
+		OS_Sleep(250+200/(i+1) + 200 * (i == ShootSequenceLen - 1));
 		if (OS_bTry(&BlockArray[x][y].Touched) && OS_Try(&ammocount) > 0) {
 			OS_Signal(&score);
 			UpdateAmmoLife();
@@ -152,6 +162,33 @@ static void RunShootSequence(uint8_t x, uint8_t y) {
 	OS_Try(&lifecount);
 	UpdateAmmoLife();
 	RunDeathSequence(x, y);
+}
+
+void LevelStart(void) {
+	OS_Signal(&levelcount);
+	// Display next-level banner.
+	DrawLevelBanner();
+	// Await S1 press.
+	OS_bTry(&levelRunning);
+	OS_bWait(&levelRunning);
+	OS_bSignal(&levelRunning);
+	// Clear the level banner
+	ClearLevelBanner();
+	uint8_t numSpawn = 2 + (rng() & 3);
+	if (levelcount.Value > 10) {
+		// Make things a bit harder;
+		numSpawn += (rng() & 3);
+	}
+	if (levelcount.Value == 20) {
+		// TODO: victory!
+		UpdateAmmoLife();
+		OS_Kill();
+	}
+	for (int i = 0; i < numSpawn; i++) {
+		OS_Signal(&livingDemons);
+	  // You filthy demon spawn! Sorry, it just felt surprisingly appropriate.
+	  OS_AddThread(&DemonThread, 128, 4);
+	}
 	OS_Kill();
 }
 
@@ -225,7 +262,4 @@ void DemonThread(void) {
     }
   }
 	RunShootSequence(x, y);
-  // runs as a thread for each active instance of cocoademon
-  // when lifetime=0 or is defeated (value passed from shot_handler), run
-  // OS_Kill()
 }
