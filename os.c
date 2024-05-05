@@ -47,7 +47,7 @@ static void (*ButtonOneTask)(void) = 0;
 static void (*ButtonTwoTask)(void) = 0;
 
 #define NUMTHREADS 20 // Maximum number of threads
-#define STACKSIZE 100 // Number of 32-bit words in stack
+#define STACKSIZE 200 // Number of 32-bit words in stack
 
 // Macros
 #define blockSema 1     // Blocking sempahores
