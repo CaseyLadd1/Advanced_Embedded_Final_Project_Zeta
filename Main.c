@@ -18,6 +18,7 @@
 #include <string.h>
 #include "video.h"
 #include "gameplay.h"
+#include "sound.h"
 
 // Constants
 #define BGCOLOR LCD_BLACK
@@ -240,6 +241,7 @@ void Interpreter(void) {
 // ***********ButtonWork2*************
 void Restart(void) {
 	NumSamples = RUNLENGTH;
+	StopBackgroundMusic();
 	OS_AddThread(&ShotHandler, 128, 2);
 	OS_Sleep(50);
 	KillAllDemons();
@@ -288,6 +290,7 @@ int main(void) {
   CrossHair_Init();
 	RenderInit();
 	
+	InitSound();
 	InitGameplay();
 	
   DataLost = 0; // lost data between producer and consumer
@@ -305,6 +308,7 @@ int main(void) {
   // create initial foreground threads
 //  OS_AddThread(&Interpreter, 128, 2);
 	OS_AddThread(&RenderThread, 128, 2);
+	OS_AddThread(&SoundThread, 128, 1);
 	OS_AddThread(&SuspendyThread, 128, 5);
 	OS_AddThread(&TitleScreenRoutine, 128, 3);
 

@@ -8,21 +8,14 @@
 
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
+#include "FIFO.h"
+#include "sound.h"
+#include "os.h"
 
-#define tempo 100
-void InitTimer4A();
-void InitPWM1();
-void tone_length(uint32_t duration);
-void play_tone(uint32_t frequency);
-void stop_buzzer();
-void play_E1M1_demo();
-void play_E1M1_main1();
-void play_E1M1_altmain1();
-void play_E1M1_main2();
-void play_E1M1_riff1();
-void play_E1M1_riff2();
-
-#define NVIC_EN2_INT70 0x00000040
+static void InitPWM1();
+static void tone_length(uint32_t duration);
+static void play_tone(uint32_t frequency);
+static void stop_buzzer();
 
 #define G2		98
 #define Gb2		104
@@ -78,36 +71,173 @@ void play_E1M1_riff2();
 #define Bb6		1865
 #define B6		1976
 
-volatile uint32_t ms_delay = 0;
+// Each element:
+// {tone, duration, rest after}
+// 
+static uint16_t music[][3] = {
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{E4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{D4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{C4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{Bb3, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{B3, 1, 1},   
+	{C4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{E4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{D4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{C4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{Bb3, 5, 6},
+	
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{E4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{D4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{C4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{Bb3, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{B3, 1, 1},    
+	{C4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{E4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 1},
+	{D4, 1, 1},
+	{E3, 1, 1},
+	{E3, 1, 6},
+	
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{A4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{G4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{F4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{Eb4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{E4, 1, 1},
+	{F4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{A4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{G4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{F4, 1, 1},
+	{A3, 1, 1},
+	{A3, 1, 1},
+	{Eb4, 5, 6},
+	
+	{Gb4, 1, 1},
+	{E4, 1, 1},
+	{Eb4, 1, 1},
+	{Gb4, 1, 1},
+	{A5, 1, 1},
+	{G4, 1, 1},
+	{Gb4, 1, 1},
+	{Eb4, 1, 1},
+	{Gb4, 1, 1},
+	{G4, 1, 1},
+	{A5, 1, 1},
+	{B5, 1, 1},
+	{A5, 1, 1},
+	{G4, 1, 1},
+	{Gb4, 1, 1},
+	{Eb4, 1, 6},
+	
+	{B5, 1, 1},
+	{G4, 1, 1},
+	{E4, 1, 1},
+	{G4, 1, 1},
+	{B5, 1, 1},
+	{G4, 1, 1},
+	{B5, 1, 1},
+	{E5, 1, 1},
+	{B5, 1, 1},
+	{G4, 1, 1},
+	{B5, 1, 1},
+	{G4, 1, 1},
+	{B5, 1, 1},
+	{E5, 1, 1},
+	{G5, 1, 1},
+	{B6, 1, 6}
+};
 
-int main() {
+
+static uint8_t BackgroundMusic;
+static uint8_t tempo;
+static uint32_t musicPosition;
+static uint32_t trackLength = sizeof(music)/sizeof(uint16_t[3]);
+static unsigned long soundThreadId;
+static Sema4Type soundReady;
+static Sema4Type eventSubmitted;
+
+void InitSound(void) {
+	BackgroundMusic = 0;
+	SoundFifo_Init();
 	InitPWM1();
-	InitTimer4A();
-	play_E1M1_demo();
-	while(1) {}
+	tempo = 100;
+	musicPosition = 0;
+	OS_InitSemaphore(&soundReady, 0);
+	OS_InitSemaphore(&eventSubmitted, 0);
 }
 
-void InitTimer4A() {
-	SYSCTL_RCGCTIMER_R |= SYSCTL_RCGCTIMER_R4;
-	while ((SYSCTL_RCGCTIMER_R & 0x10) == 0) {} // allow time for clock to stabilize
-	TIMER4_CTL_R &= ~TIMER_CTL_TAEN; // disable timer4A during setup
-	TIMER4_CFG_R = TIMER_CFG_32_BIT_TIMER;  // configure for 32-bit timer mode
-	TIMER4_TAMR_R = TIMER_TAMR_TAMR_PERIOD; // configure for periodic mode, default down-count settings
-	TIMER4_TAILR_R = 16000 - 1; // reload value           
-	TIMER4_ICR_R = TIMER_ICR_TATOCINT; // clear timer4A timeout flag
-	TIMER4_IMR_R |= TIMER_IMR_TATOIM; // arm timeout interrupt
-	NVIC_PRI17_R = (NVIC_PRI17_R & 0xFF00FFFF) | (3 << 21); // 3 // // priority shifted to bits 15-13 for timer1A
-	NVIC_EN2_R = NVIC_EN2_INT70; // enable interrupt 70 in NVIC
-	TIMER4_TAPR_R = 0;
-	TIMER4_CTL_R |= TIMER_CTL_TAEN; // enable timer4A
-}
-
-void Timer4A_Handler(void) {
-	TIMER4_ICR_R = TIMER_ICR_TATOCINT; // acknowledge timer4A timeout
-	ms_delay++;
+void AwaitSoundReady(void) {
+	OS_bWait(&soundReady);
+	OS_bSignal(&soundReady);
 }
 
 
+static void SubmitEvent(uint8_t n) {
+	SoundFifo_Put((soundEvent) {
+		.command = n
+	});
+	OS_bSignal(&eventSubmitted);
+	OS_WakeupThread(soundThreadId);
+}
+
+void StartBackgroundMusic(void) {
+	SubmitEvent(0);
+}
+void StopBackgroundMusic(void) {
+	SubmitEvent(1);
+}
+void PointScoredSound(void) {
+	SubmitEvent(2);
+}
+void LostLifeSound(void) {
+	SubmitEvent(3);
+}
 void InitPWM1() {
 	SYSCTL_RCGCPWM_R |= SYSCTL_RCGCPWM_R1; // Enable clock to PWM1 module
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R5; // Enable system clock to PORTF
@@ -123,32 +253,11 @@ void InitPWM1() {
 	PWM1_3_CTL_R &= ~(PWM_3_CTL_MODE); // Select down count mode
 	PWM1_3_GENA_R |= (1 << 2) | (1 << 3) | (1 << 7); // Set PWM output when counter reloads and clears when match
 	PWM1_3_CTL_R |= PWM_3_CTL_ENABLE; // Enable generator 3
-} 
-//save tracks as arrays or TCBs?
-// Commented out for compiler version 6 to work.
-/*
-void play_track(track){
-	//code goes here
-	//creates a thread that plays a given track
-}
-*/
-
-void play_note(uint32_t note, uint32_t duration){
-	play_tone(note);
-	tone_length(duration);
-	stop_buzzer();
-	tone_length(1);
-}
-
-void play_rest(uint32_t duration){
-	stop_buzzer();
-	tone_length(duration);
-	tone_length(1);
 }
 
 // Duration can be any number as long as the ratio between duration of notes is consistent
 // If tempo is a requirement and a timer is necessary, put the number of milliseconds
-void play_tone(uint32_t frequency){
+static void play_tone(uint32_t frequency){
 	uint32_t clock_frequency_with_divider = 16000000 / 4;
 	uint32_t load_value = clock_frequency_with_divider / frequency;
 	uint32_t duty_cycle = load_value / 2;
@@ -158,162 +267,85 @@ void play_tone(uint32_t frequency){
 	PWM1_ENABLE_R |= (1 << 6); // Enable PWM1 channel 6 output
 }
 
-void tone_length(uint32_t duration) {
-	uint32_t milliseconds = (duration * 1000 * 60 / tempo / 4) - (1000 * 60 / tempo / 8);
-
-	uint32_t start_time = ms_delay;
-  	while ((ms_delay - start_time) < milliseconds) {}
-	ms_delay = 0;
-}
-
-void stop_buzzer() {
+static void stop_buzzer() {
 	PWM1_ENABLE_R &= ~(1 << 6);
 }
 
-void play_E1M1_demo(){
-	play_E1M1_main1();
-	tone_length(4);
-	play_E1M1_altmain1();
-	tone_length(4);
-	play_E1M1_main2();
-	tone_length(4);
-	play_E1M1_riff1();
-	tone_length(4);
-	play_E1M1_riff2();
+static void tone_length(uint32_t duration) {
+	OS_Sleep((2 * duration - 1) * 125 * 60 / tempo);
 }
 
-void play_E1M1_main1(){
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
+void play_note(uint32_t note, uint32_t duration){
+	play_tone(note);
+	tone_length(duration);
+}
+
+static void play_rest(uint32_t duration){
+	stop_buzzer();
+	tone_length(duration);
+}
+
+
+static void _stepBackgroundMusic_internal(void) {
+	play_note(music[musicPosition][0], music[musicPosition][1]);
+	stop_buzzer();
+	if (OS_bTry(&eventSubmitted)) return;
+	 tone_length(music[musicPosition][2]);
+}
+
+static void _pointScored_internal(void) {
+	play_rest(1);
 	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(Bb3, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(B3, 1);   
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
+	play_rest(1);
+	play_note(D5, 1);
+	play_rest(3);
+}
+
+static void _lifeLost_internal(void) {
+	play_rest(1);
 	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
+	play_rest(1);
+	play_note(Eb4, 1);
+	play_rest(1);
 	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(Bb3, 5);
-
+	play_rest(3);
 }
 
-void play_E1M1_altmain1(){
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(Bb3, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(B3, 1);    
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-
+void SoundThread(void) {
+	soundEvent data;
+	soundThreadId = OS_Id();
+	OS_bSignal(&soundReady);
+	while (1) {
+		if (BackgroundMusic) {
+			if (SoundFifo_TryGet(&data) == SOUNDFIFOFAIL) {
+				OS_bTry(&eventSubmitted);
+				_stepBackgroundMusic_internal();
+				musicPosition++;
+				musicPosition -= trackLength * (musicPosition == trackLength);
+				continue;
+			}
+		} else {
+			SoundFifo_Get(&data);
+		}
+		switch (data.command) {
+			case 0:
+				BackgroundMusic = 1;
+				break;
+			case 1:
+				stop_buzzer();
+			  BackgroundMusic = 0;
+				break;
+			case 2:
+				_pointScored_internal();
+				break;
+			case 3:
+				_lifeLost_internal();
+				break;
+			default:
+				break;
+		}
+	}
 }
-
-void play_E1M1_main2(){
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(A4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(G4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(F4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(Eb4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(E4, 1);
-	play_note(F4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(A4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(G4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(F4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(Eb4, 5);
-
-}
-
-void play_E1M1_riff1(){
-	play_note(Gb4, 1);
-	play_note(E4, 1);
-	play_note(Eb4, 1);
-	play_note(Gb4, 1);
-	play_note(A5, 1);
-	play_note(G4, 1);
-	play_note(Gb4, 1);
-	play_note(Eb4, 1);
-	play_note(Gb4, 1);
-	play_note(G4, 1);
-	play_note(A5, 1);
-	play_note(B5, 1);
-	play_note(A5, 1);
-	play_note(G4, 1);
-	play_note(Gb4, 1);
-	play_note(Eb4, 1);
-
-}
-
-void play_E1M1_riff2(){
-	play_note(B5, 1);
-	play_note(G4, 1);
-	play_note(E4, 1);
-	play_note(G4, 1);
-	play_note(B5, 1);
-	play_note(G4, 1);
-	play_note(B5, 1);
-	play_note(E5, 1);
-	play_note(B5, 1);
-	play_note(G4, 1);
-	play_note(B5, 1);
-	play_note(G4, 1);
-	play_note(B5, 1);
-	play_note(E5, 1);
-	play_note(G5, 1);
-	play_note(B6, 1);
-
-}
-
 
 //void E2M6(){
 	//code goes here

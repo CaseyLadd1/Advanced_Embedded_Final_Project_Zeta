@@ -60,8 +60,9 @@ typedef struct {
 } spriteMessage;
 
 typedef struct {
-	// start background music = 0, stop background music = 1,
-	// point scored = 2, life lost = 3.
+	// background music: enable = 0, disable = 1, toggle = 4
+	// point scored = 2, life lost = 3
+	// effect sounds: enable = 5, disable = 6, toggle = 7
 	uint8_t command;
 } soundEvent;
 

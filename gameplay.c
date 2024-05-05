@@ -4,7 +4,7 @@
 #include "gameplay.h"
 #include "rng/rng.h"
 #include "tm4c123gh6pm.h"
-// cursor values need to be passed into this section
+#include "sound.h"
 
 const uint32_t ShootSequence[] = {
     BMP_2_1_CAC_ATTTAC_A_OFFSET,  BMP_1_1_CAC_ATTAC_B_OFFSET,
@@ -75,6 +75,8 @@ static void AwaitS1(void) {
 
 void Consumer(void);
 void TitleScreenRoutine(void){
+	AwaitSoundReady();
+	StartBackgroundMusic();
 	ClearScreen();
 	DrawTitle();
 	AwaitS1();
@@ -199,11 +201,13 @@ static void RunShootSequence(uint8_t x, uint8_t y) {
 		OS_Sleep(250+200/(i+1) + 200 * (i == ShootSequenceLen - 1));
 		if (OS_bTry(&BlockArray[x][y].Touched) && OS_Try(&ammocount) > 0) {
 			OS_Signal(&score);
+			PointScoredSound();
 			UpdateAmmoLife();
       // If we have, start the death sequence.
       RunDeathSequence(x, y);
     }
 	}
+	LostLifeSound();
 	if (OS_Try(&lifecount) == 1) {
 		EndGame();
 	}
@@ -256,6 +260,7 @@ void DemonThread(void) {
     // Check if we have been touched.
     if (OS_bTry(&BlockArray[x][y].Touched) && OS_Try(&ammocount) > 0) {
 			OS_Signal(&score);
+			PointScoredSound();
 			UpdateAmmoLife();
       // If we have, start the death sequence.
       RunDeathSequence(x, y);
