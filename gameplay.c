@@ -62,10 +62,14 @@ void InitGameplay(void) {
 	OS_InitSemaphore(&levelRunning, 0);
 }
 
-static void AwaitS1(void) {
+static void AwaitS1_inner(void) {
 	OS_bTry(&levelRunning);
 	OS_bWait(&levelRunning);
 	OS_bSignal(&levelRunning);
+}
+
+static void AwaitS1(void) {
+	AwaitS1_inner();
 	if (NumSamples == RUNLENGTH) OS_Kill();
 }
 
@@ -176,6 +180,18 @@ static void RunDeathSequence(uint8_t x, uint8_t y) {
 	OS_Kill();
 }
 
+void Restart(void);
+void EndGame(void) {
+	NumSamples = RUNLENGTH;
+	KillAllDemons();
+	OS_Sleep(500);
+	ClearScreen();
+	UpdateAmmoLife();
+	DrawEndScreen();
+	AwaitS1_inner();
+	OS_AddThread(&Restart, 128, 4);
+}
+
 static void RunShootSequence(uint8_t x, uint8_t y) {
 	for (int i = 0; i < ShootSequenceLen; i++) {
 		DrawSprite(x, y, 0, ShootSequence[i]);
@@ -187,10 +203,13 @@ static void RunShootSequence(uint8_t x, uint8_t y) {
       RunDeathSequence(x, y);
     }
 	}
-	OS_Try(&lifecount);
+	if (OS_Try(&lifecount) == 1) {
+		EndGame();
+	}
 	UpdateAmmoLife();
 	RunDeathSequence(x, y);
 }
+
 
 void LevelStart(void) {
 	OS_Signal(&levelcount);
@@ -206,9 +225,7 @@ void LevelStart(void) {
 		numSpawn += (rng() & 3);
 	}
 	if (levelcount.Value == 20) {
-		// TODO: victory!
-		UpdateAmmoLife();
-		OS_Kill();
+		EndGame();
 	}
 	for (int i = 0; i < numSpawn; i++) {
 		OS_Signal(&livingDemons);

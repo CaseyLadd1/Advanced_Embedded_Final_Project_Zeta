@@ -51,7 +51,7 @@ typedef struct {
 	uint8_t direction;
 	// draw sprite = 0, clear sprite = 1, update life/ammo = 2
 	// draw level banner = 3, clear play area = 4, clear screen = 5,
-	// draw title = 6, draw instructions = 7
+	// draw title = 6, draw instructions = 7, draw end screen = 8
 	uint8_t command;
 	uint32_t sprite;
 } spriteMessage;

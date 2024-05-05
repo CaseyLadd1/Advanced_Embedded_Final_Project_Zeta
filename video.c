@@ -88,6 +88,18 @@ static void _drawInstructions_internal(void) {
 	_promptS1_internal();
 }
 
+static void _drawEndScreen_internal(void) {
+	BSP_LCD_DrawString(5, 1, "GAME OVER!", LCD_WHITE);
+	
+	BSP_LCD_DrawString(0, 4, "Made by:", LCD_WHITE);
+	BSP_LCD_DrawString(2, 5, "John Berberian", LCD_WHITE);
+	BSP_LCD_DrawString(2, 6, "Sarah Hemler", LCD_WHITE);
+	BSP_LCD_DrawString(2, 7, "Paul Karhnak", LCD_WHITE);
+	BSP_LCD_DrawString(2, 8, "Casey Ladd", LCD_WHITE);
+	
+	BSP_LCD_DrawString(0, 10, "Press S1 to restart.", LCD_WHITE);
+}
+
 void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t sprite) {
 	if (blockx > HORIZONTALNUM || blocky > VERTICALNUM || sprite >= BMP_LENGTH) {
 		return;
@@ -145,6 +157,12 @@ void DrawInstructions(void) {
 	});
 }
 
+void DrawEndScreen(void) {
+	DrawFifo_Put((spriteMessage){
+		.command=8
+	});
+}
+
 extern unsigned long NumSamples;
 #define RUNLENGTH 600
 extern Sema4Type LCDFree;
@@ -168,6 +186,8 @@ void RenderThread(void) {
 			_promptS1_internal();
 		} else if (data.command == 7) {
 			_drawInstructions_internal();
+		} else if (data.command == 8) {
+			_drawEndScreen_internal();
 		} else {
 			_drawSprite_internal(data.blockx, data.blocky, data.direction, data.sprite);
 		}
