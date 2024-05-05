@@ -49,9 +49,8 @@
 #define BMP_6_7_TITLE_OFFSET 0x2c00
 #define BMP_LENGTH 0x2d00
 
-#ifndef DEFINE_BITMAP
 extern const uint16_t BitMapValues[];
-#else
+#ifdef DEFINE_BITMAP
 const uint16_t BitMapValues[] = {
 /* begin images/1_1_cac_attac_b.bmp */
 0x0000, 0x6b4d, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,

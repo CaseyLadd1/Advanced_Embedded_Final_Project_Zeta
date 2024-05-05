@@ -34,7 +34,7 @@ def printFooter():
 
 def sanitizeMacro(s):
     return re.sub('[^A-Z0-9]+','_', s.upper())
-file = io.StringIO('\n#ifndef DEFINE_BITMAP\nextern const uint16_t BitMapValues[];\n#else\nconst uint16_t BitMapValues[] = {\n')
+file = io.StringIO('\nextern const uint16_t BitMapValues[];\n#ifdef DEFINE_BITMAP\nconst uint16_t BitMapValues[] = {\n')
 file.seek(0, 2)
 offset = 0
 

@@ -50,7 +50,7 @@
 
 // feel free to change the type of semaphore, there are lots of good solutions
 struct Sema4 {
-  long Value; // >0 means free, otherwise means busy
+  volatile long Value; // >0 means free, otherwise means busy
   // add other components here, if necessary to implement blocking
 };
 typedef struct Sema4 Sema4Type;
@@ -101,7 +101,7 @@ void OS_bSignal(Sema4Type *semaPt);
 //         priority, 0 is highest, 5 is the lowest
 // Outputs: 1 if successful, 0 if this thread can not be added
 // stack size must be divisable by 8 (aligned to double word boundary)
-int OS_AddThread(void (*task)(void), unsigned long stackSize,
+unsigned int OS_AddThread(void (*task)(void), unsigned long stackSize,
                  unsigned long priority);
 
 //******** OS_Id ***************
@@ -109,6 +109,9 @@ int OS_AddThread(void (*task)(void), unsigned long stackSize,
 // Inputs: none
 // Outputs: Thread ID, number greater than zero
 unsigned long OS_Id(void);
+
+// Sets a thread's sleep count to zero.
+void OS_WakeupThread(unsigned long id);
 
 //******** OS_AddPeriodicThread ***************
 // add a background periodic task

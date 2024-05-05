@@ -1,3 +1,5 @@
+#ifndef EMB_PLL_H
+#define EMB_PLL_H
 // PLL.h
 // Runs on LM4F120/TM4C123
 // A software function to change the bus frequency using the PLL.
@@ -160,3 +162,5 @@ void PLL_Init(uint32_t freq);
 #define Bus3_175MHz 125
 #define Bus3_150MHz 126
 #define Bus3_125MHz 127
+
+#endif

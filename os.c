@@ -39,8 +39,8 @@ void WaitForInterrupt(void);     // low power mode
 void StartOS(void);
 
 // Periodic task function pointers
-void (*PeriodicTask1)(void);
-void (*PeriodicTask2)(void);
+static void (*PeriodicTask1)(void);
+static void (*PeriodicTask2)(void);
 
 // Button task function pointers
 static void (*ButtonOneTask)(void) = 0;
@@ -155,7 +155,7 @@ void OS_Suspend(void) {
 // Outputs: 1 if successful, 0 if this thread can not be added
 // stack size must be divisable by 8 (aligned to double word boundary)
 static uint32_t ThreadNum = 0;
-int OS_AddThread(void (*task)(void), unsigned long stackSize,
+unsigned int OS_AddThread(void (*task)(void), unsigned long stackSize,
                  unsigned long priority) {
   unsigned char i, j;
   int32_t status, thread;
@@ -214,6 +214,10 @@ int OS_AddThread(void (*task)(void), unsigned long stackSize,
 // Inputs: none
 // Outputs: Thread ID, number greater than zero
 unsigned long OS_Id(void) { return RunPt->id; }
+
+void OS_WakeupThread(unsigned long id) {
+	tcbs[id].sleepCt = 0;
+}
 
 // ******** OS_Wait ************
 // decrement semaphore

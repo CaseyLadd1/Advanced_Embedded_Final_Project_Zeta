@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "video.h"
+#include "gameplay.h"
 
 // Constants
 #define BGCOLOR LCD_BLACK
@@ -87,8 +88,8 @@ int UpdatePosition(uint16_t rawx, uint16_t rawy, jsDataType *data) {
   if (x < 0) {
     x = 0;
   }
-  if (y > 112 - CROSSSIZE) {
-    y = 112 - CROSSSIZE;
+  if (y > 112-1) {
+    y = 112-1;
   }
   if (y < 0) {
     y = 0;
@@ -109,7 +110,7 @@ void Producer(void) {
     BSP_Joystick_Input(&rawX, &rawY, &select);
     thisTime = OS_Time();                            // current time, 12.5 ns
     UpdateWork += UpdatePosition(rawX, rawY, &data); // calculation work
-    NumSamples++;                                    // number of samples
+    //NumSamples++;                                    // number of samples
     if (JsFifo_Put(data) == 0) {                     // send to consumer
       DataLost++;
     }
@@ -221,8 +222,13 @@ void CubeNumCalc(void) {
     if (NumSamples < RUNLENGTH) {
       CurrentX = x;
       CurrentY = y;
-      area[0] = CurrentX / 22;
-      area[1] = CurrentY / 20;
+      area[0] = CurrentX / 16;
+      area[1] = CurrentY / 16;
+			if (!BlockArray[area[0]][area[1]].BlockUnoccupied.Value) {
+				OS_bSignal(&BlockArray[area[0]][area[1]].Touched);
+				OS_WakeupThread(BlockArray[area[0]][area[1]].threadId);
+				OS_Suspend();
+			}
       Calculation++;
     }
   }
@@ -363,7 +369,8 @@ int main(void) {
   Device_Init();
   CrossHair_Init();
 	RenderInit();
-ShowSpriteTest();	
+	InitGameplay();
+//ShowSpriteTest();	
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
@@ -383,8 +390,11 @@ ShowSpriteTest();
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&Consumer, 128, 1);
   NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
-  NumCreated += OS_AddThread(&Display, 128, 3);
 	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
+	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
