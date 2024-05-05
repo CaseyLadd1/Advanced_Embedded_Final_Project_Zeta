@@ -279,15 +279,15 @@ void play_E1M1_riff1(){
 	play_note(E4, 1);
 	play_note(Eb4, 1);
 	play_note(Gb4, 1);
-	play_note(A5, 1);
+	play_note(A4, 1);
 	play_note(G4, 1);
 	play_note(Gb4, 1);
 	play_note(Eb4, 1);
 	play_note(Gb4, 1);
 	play_note(G4, 1);
-	play_note(A5, 1);
-	play_note(B5, 1);
-	play_note(A5, 1);
+	play_note(A4, 1);
+	play_note(B4, 1);
+	play_note(A4, 1);
 	play_note(G4, 1);
 	play_note(Gb4, 1);
 	play_note(Eb4, 1);
@@ -295,22 +295,22 @@ void play_E1M1_riff1(){
 }
 
 void play_E1M1_riff2(){
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
 	play_note(E4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(E5, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(E5, 1);
 	play_note(G5, 1);
-	play_note(B6, 1);
+	play_note(B5, 1);
 
 }
 
