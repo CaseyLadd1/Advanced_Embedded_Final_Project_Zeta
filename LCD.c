@@ -1171,10 +1171,10 @@ void BSP_LCD_OutUDec(uint32_t n, int16_t textColor) {
   Message[Messageindex] = 0; // terminate
   BSP_LCD_DrawString(StX, StY, Message, textColor);
   StX = StX + Messageindex;
-  if (StX > 20) {
+/*  if (StX > 20) {
     StX = 20;
     BSP_LCD_DrawChar(StX * 6, StY * 10, '*', ST7735_RED, ST7735_BLACK, 1);
-  }
+  }*/
 }
 
 //-----------------------BSP_LCD_OutUDec4-----------------------
@@ -1386,6 +1386,17 @@ void BSP_LCD_Message(int device, int line, int col, char *string,
       col + BSP_LCD_DrawString(col, StringVPosition, string, LCD_WHITE);
   BSP_LCD_SetCursor(DecimalHPosition, StringVPosition);
   BSP_LCD_OutUDec4(value, LCD_WHITE);
+}
+										 
+// Same as BSP_LCD_Message, but with variable width integer rendering.
+void BSP_LCD_MessageVar(int device, int line, int col, char *string,
+                     unsigned int value) {
+  uint16_t StringVPosition, DecimalHPosition;
+  StringVPosition = device * 7 + line;
+  DecimalHPosition =
+      col + BSP_LCD_DrawString(col, StringVPosition, string, LCD_WHITE);
+  BSP_LCD_SetCursor(DecimalHPosition, StringVPosition);
+  BSP_LCD_OutUDec(value, LCD_WHITE);
 }
 
 //------------BSP_LCD_DrawCrosshaire-------------------

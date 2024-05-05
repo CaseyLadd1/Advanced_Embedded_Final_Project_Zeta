@@ -47,7 +47,7 @@ static void (*ButtonOneTask)(void) = 0;
 static void (*ButtonTwoTask)(void) = 0;
 
 #define NUMTHREADS 20 // Maximum number of threads
-#define STACKSIZE 100 // Number of 32-bit words in stack
+#define STACKSIZE 200 // Number of 32-bit words in stack
 
 // Macros
 #define blockSema 1     // Blocking sempahores
@@ -132,7 +132,7 @@ void SetInitialStack(int i) {
 void OS_Launch(unsigned long theTimeSlice) {
   NVIC_ST_RELOAD_R = theTimeSlice - 1; // reload value
   NVIC_ST_CTRL_R = 0x00000007;         // enable, core clock and interrupt arm
-  StartOS();                           // start on the first task
+	StartOS();                           // start on the first task
 }
 
 // ******** OS_Suspend ************
@@ -252,7 +252,7 @@ void OS_Wait(Sema4Type *semaPt) {
 int OS_Try(Sema4Type *semaPt) {
   long sr = StartCritical();
 	int retval = semaPt->Value;
-	 semaPt->Value -= (semaPt->Value > 0);
+	semaPt->Value -= (semaPt->Value > 0);
   EndCritical(sr);
 	return retval;
 }
@@ -274,6 +274,24 @@ void OS_Signal(Sema4Type *semaPt) {
     pt->blockPt = 0;
   }
 #endif
+  EndCritical(sr);
+}
+
+void OS_SignalN(Sema4Type *semaPt, unsigned int count) {
+  long sr = StartCritical();
+	for (int i = 0; i < count; i++) {
+  semaPt->Value++;
+#if blockSema
+  tcbType *pt;
+  if (semaPt->Value <= 0) {
+    pt = RunPt->next;
+    while (pt->blockPt != semaPt) {
+      pt = pt->next;
+    }
+    pt->blockPt = 0;
+  }
+#endif
+}
   EndCritical(sr);
 }
 
@@ -442,6 +460,8 @@ int OS_AddPeriodicThread(void (*task)(void), unsigned long period,
   PeriodTaskCt++;
   return 1;
 }
+												 
+
 
 // Timing Functions
 // ------------------------------------------------------------------------------
@@ -470,12 +490,15 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
 
 // Ms time system
 static uint32_t MSTime;
+static uint32_t blinktime;
 // ******** OS_ClearMsTime ************
 // sets the system time to zero
 // Inputs:  none
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void) { MSTime = 0; }
+void OS_Clearblinktime(void) { blinktime = 0; }
+
 
 // ******** OS_MsTime ************
 // reads the current time in msec
@@ -485,6 +508,7 @@ void OS_ClearMsTime(void) { MSTime = 0; }
 // It is ok to make the resolution to match the first call to
 // OS_AddPeriodicThread
 unsigned long OS_MsTime(void) { return MSTime; }
+unsigned long OS_blinktime(void) {return blinktime; }
 
 // Timers
 // ------------------------------------------------------------------------------
