@@ -33,9 +33,6 @@ uint16_t origin[2];   // The original ADC value of x,y if the joystick is not
 int16_t x = 63;       // horizontal position of the crosshair, initially 63
 int16_t y = 63;       // vertical position of the crosshair, initially 63
 int16_t prevx, prevy; // Previous x and y values of the crosshair
-uint8_t select;       // joystick push
-uint8_t area[2];
-uint32_t PseudoCount;
 
 unsigned long NumCreated;  // Number of foreground threads created
 unsigned long NumSamples;  // Incremented every ADC sample, in Producer
@@ -99,6 +96,8 @@ int UpdatePosition(uint16_t rawx, uint16_t rawy, jsDataType *data) {
   return 1;
 }
 
+void Restart(void);
+
 void Producer(void) {
   uint16_t rawX, rawY; // raw adc value
   uint8_t select;
@@ -114,6 +113,9 @@ void Producer(void) {
     if (JsFifo_Put(data) == 0) {                     // send to consumer
       DataLost++;
     }
+		if (select == 0) {
+		OS_AddThread(&Restart, 128, 1);
+		}
     // calculate jitter
     if (UpdateWork > 1) { // ignore timing of first interrupt
       unsigned long diff = OS_TimeDifference(LastTime, thisTime);
@@ -237,29 +239,13 @@ void Interpreter(void) {
 }
 //--------------end of Task 5-----------------------------
 
-//------------------Task 6--------------------------------
-
-//************ Display ***************
-// foreground thread, do some pseudo works to test if you can add multiple
-// periodic threads inputs:  none outputs: none
-void Display(void) {
-  while (NumSamples < RUNLENGTH) {
-    OS_Sleep(1);
-    OS_bWait(&LCDFree);
-    BSP_LCD_Message(1, 4, 0, "PseudoCount: ", PseudoCount);
-    DisplayCount++;
-    OS_bSignal(&LCDFree);
-  }
-  OS_Kill(); // done
-}
-
-//--------------end of Task 6-----------------------------
-
 //------------------Task 7--------------------------------
 // background thread executes with button2
 // one foreground task created with button push
 // ***********ButtonWork2*************
 void Restart(void) {
+	OS_Kill();
+	// TODO: this.
   uint32_t StartTime, CurrentTime, ElapsedTime;
   NumSamples = RUNLENGTH; // first kill the foreground threads
   OS_Sleep(50);           // wait
@@ -280,11 +266,9 @@ void Restart(void) {
   NumSamples = 0;
   UpdateWork = 0;
   MaxJitter = 0; // in 1us units
-  PseudoCount = 0;
   x = 63;
   y = 63;
   NumCreated += OS_AddThread(&Consumer, 128, 1);
-  NumCreated += OS_AddThread(&Display, 128, 3);
   OS_Kill(); // done, OS does not return from a Kill
 }
 
@@ -308,6 +292,7 @@ void SW2Push(void) {
 // Fill the screen with the background color
 // Grab initial joystick position to bu used as a reference
 void CrossHair_Init(void) {
+	uint8_t select;
   BSP_LCD_FillScreen(BGCOLOR);
   BSP_Joystick_Input(&origin[0], &origin[1], &select);
 }
@@ -328,7 +313,6 @@ int main(void) {
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
-  PseudoCount = 0;
 
   //********initialize communication channels
   JsFifo_Init();
@@ -344,11 +328,8 @@ int main(void) {
 //  NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&Consumer, 128, 1);
 	NumCreated += OS_AddThread(&RenderThread, 128, 3);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
-	NumCreated += OS_AddThread(&DemonThread, 128, 4);
 	NumCreated += OS_AddThread(&SuspendyThread, 128, 5);
+	NumCreated += OS_AddThread(&LevelStart, 128, 1);
 	
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
