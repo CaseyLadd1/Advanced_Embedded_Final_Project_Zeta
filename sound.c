@@ -9,7 +9,7 @@
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
 
-#define tempo 100
+#define tempo 250
 void InitTimer4A();
 void InitPWM1();
 void tone_length(uint32_t duration);
@@ -18,9 +18,18 @@ void stop_buzzer();
 void play_E1M1_demo();
 void play_E1M1_main1();
 void play_E1M1_altmain1();
+void play_E1M1_altmain2();
 void play_E1M1_main2();
+void play_E1M1_main3();
 void play_E1M1_riff1();
 void play_E1M1_riff2();
+void play_E1M1_riff3();
+void play_E1M1_riff4();
+void play_E2M6_demo();
+void play_E2M6_main1();
+void play_E2M6_main2();
+void play_E2M6_main3();
+void play_E2M6_altmain2();
 
 #define NVIC_EN2_INT70 0x00000040
 
@@ -84,6 +93,9 @@ int main() {
 	InitPWM1();
 	InitTimer4A();
 	play_E1M1_demo();
+	play_E1M1_demo();
+	//play_E2M6_demo();
+	//play_E2M6_demo();
 	while(1) {}
 }
 
@@ -172,105 +184,172 @@ void stop_buzzer() {
 
 void play_E1M1_demo(){
 	play_E1M1_main1();
-	tone_length(4);
+	play_E1M1_main1();
+	play_E1M1_main1();
 	play_E1M1_altmain1();
-	tone_length(4);
-	play_E1M1_main2();
-	tone_length(4);
 	play_E1M1_riff1();
-	tone_length(4);
+	play_E1M1_main1();
+	play_E1M1_altmain1();
 	play_E1M1_riff2();
+	play_E1M1_main2();
+	play_E1M1_altmain2();
+	play_E1M1_riff3();
+	play_E1M1_main1();
+	play_E1M1_main1();
+	play_E1M1_main3();
+	play_E1M1_altmain1();
+	play_E1M1_riff4();
 }
 
 void play_E1M1_main1(){
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(Bb3, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(B3, 1);   
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(Bb3, 5);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(E4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(D4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(C4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(Bb3, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(B3, 2);   
+	play_note(C4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(E4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(D4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(C4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(Bb3, 10);
 
 }
 
 void play_E1M1_altmain1(){
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(Bb3, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(B3, 1);    
-	play_note(C4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(E4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
-	play_note(D4, 1);
-	play_note(E3, 1);
-	play_note(E3, 1);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(E4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(D4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(C4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(Bb3, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(B3, 2);    
+	play_note(C4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(E4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
+	play_note(D4, 2);
+	play_note(E3, 2);
+	play_note(E3, 2);
 
 }
 
 void play_E1M1_main2(){
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(A4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(G4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(F4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(Eb4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(E4, 1);
-	play_note(F4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(A4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(G4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(F4, 1);
-	play_note(A3, 1);
-	play_note(A3, 1);
-	play_note(Eb4, 5);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(A4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(G4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(F4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(Eb4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(E4, 2);
+	play_note(F4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(A4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(G4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(F4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(Eb4, 10);
+
+}
+
+void play_E1M1_main3(){
+	play_note(Db4, 2);
+	play_note(Db4, 2);
+	play_note(Db5, 2);
+	play_note(Db4, 2);
+	play_note(Db4, 2);
+	play_note(B4, 2);
+	play_note(Db4, 2);
+	play_note(Db4, 2);
+	play_note(A4, 2);
+	play_note(Db4, 2);
+	play_note(Db4, 2);
+	play_note(G4, 2);
+	play_note(Db4, 2);
+	play_note(Db4, 2);
+	play_note(Ab4, 2);
+	play_note(A4, 2);
+	play_note(B3, 2);
+	play_note(B3, 2);
+	play_note(B4, 2);
+	play_note(B3, 2);
+	play_note(B3, 2);
+	play_note(A4, 2);
+	play_note(B3, 2);
+	play_note(B3, 2);
+	play_note(G4, 2);
+	play_note(Bb3, 2);
+	play_note(A3, 2);
+	play_note(F4, 10);
+
+}
+
+void play_E1M1_altmain2(){
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(A4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(G4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(F4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(Eb4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(E4, 2);
+	play_note(F4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(A4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
+	play_note(G4, 2);
+	play_note(A3, 2);
+	play_note(A3, 2);
 
 }
 
@@ -279,15 +358,15 @@ void play_E1M1_riff1(){
 	play_note(E4, 1);
 	play_note(Eb4, 1);
 	play_note(Gb4, 1);
-	play_note(A5, 1);
+	play_note(A4, 1);
 	play_note(G4, 1);
 	play_note(Gb4, 1);
 	play_note(Eb4, 1);
 	play_note(Gb4, 1);
 	play_note(G4, 1);
-	play_note(A5, 1);
-	play_note(B5, 1);
-	play_note(A5, 1);
+	play_note(A4, 1);
+	play_note(B4, 1);
+	play_note(A4, 1);
 	play_note(G4, 1);
 	play_note(Gb4, 1);
 	play_note(Eb4, 1);
@@ -295,26 +374,152 @@ void play_E1M1_riff1(){
 }
 
 void play_E1M1_riff2(){
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
 	play_note(E4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(E5, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(G4, 1);
-	play_note(B5, 1);
+	play_note(B4, 1);
 	play_note(E5, 1);
 	play_note(G5, 1);
-	play_note(B6, 1);
+	play_note(B5, 1);
+
+}
+
+void play_E1M1_riff3(){
+	play_note(A4, 1);
+	play_note(F4, 1);
+	play_note(E4, 1);
+	play_note(A4, 1);
+	play_note(E4, 1);
+	play_note(C4, 1);
+	play_note(E4, 1);
+	play_note(A4, 1);
+	play_note(C5, 1);
+	play_note(A4, 1);
+	play_note(E4, 1);
+	play_note(A4, 1);
+	play_note(E4, 1);
+	play_note(A4, 1);
+	play_note(E4, 1);
+	play_note(C4, 1);
+
+}
+
+void play_E1M1_riff4(){
+	play_note(G4, 1);
+	play_note(B4, 1);
+	play_note(E4, 1);
+	play_note(B3, 1);
+	play_note(G4, 1);
+	play_note(E4, 1);
+	play_note(B4, 1);
+	play_note(G4, 1);
+	play_note(B5, 1);
+	play_note(G4, 1);
+	play_note(E4, 1);
+	play_note(B3, 1);
+	play_note(G4, 1);
+	play_note(B4, 1);
+	play_note(E5, 1);
+	play_note(G5, 1);
 
 }
 
 
+void play_E2M6_demo(){
+	
+	play_E2M6_main1();
+	play_E2M6_main1();
+	play_E2M6_main2();
+  play_E2M6_main1();
+  play_E2M6_main3();
+	play_E2M6_altmain2();
+	
+}
+
+void play_E2M6_main1(){
+	play_note(D3,8);
+	play_note(Eb3,8);
+	play_note(E3, 8);
+	play_note(Eb3,8);
+	play_note(F3,8);
+	play_note(Eb3,8);
+	play_note(Gb3,8);
+	play_note(Db3,8);
+	play_note(D3,8);
+	play_note(Eb3,8);
+	play_note(E3, 8);
+	play_note(Eb3,8);
+	play_note(F3,8);
+	play_note(Eb3,8);
+	play_note(Gb3,16);
+	
+}
+
+void play_E2M6_main2(){
+	play_note(G3,8);
+	play_note(Ab3,8);
+	play_note(A3, 8);
+	play_note(Ab3,8);
+	play_note(Bb3,8);
+	play_note(Ab3,8);
+	play_note(B3,8);
+	play_note(Gb3,8);
+	play_note(G3,8);
+	play_note(Ab3,8);
+	play_note(A3, 8);
+	play_note(Ab3,8);
+	play_note(Bb3,8);
+	play_note(Ab3,8);
+	play_note(B3,16);
+	
+}
+
+void play_E2M6_main3(){
+	play_note(C3,8);
+	play_note(Db3,8);
+	play_note(D3, 8);
+	play_note(Db3,8);
+	play_note(Eb3,8);
+	play_note(Db3,8);
+	play_note(E3,8);
+	play_note(B2,8);
+	play_note(D3,8);
+	play_note(Eb3,8);
+	play_note(E3, 8);
+	play_note(Eb3,8);
+	play_note(F3,8);
+	play_note(Eb3,8);
+	play_note(Gb3,16);
+	
+}
+
+void play_E2M6_altmain2(){
+	play_note(G3,8);
+	play_note(Ab3,8);
+	play_note(A3, 8);
+	play_note(Ab3,8);
+	play_note(Bb3,8);
+	play_note(Ab3,8);
+	play_note(B3,8);
+	play_note(Gb3,8);
+	play_note(A3,8);
+	play_note(Bb3,8);
+	play_note(B3, 8);
+	play_note(Bb3,8);
+	play_note(C4,8);
+	play_note(B3,8);
+	play_note(Bb3,16);
+	
+}
 //void E2M6(){
 	//code goes here
 	//PWM data for title track "Sinister"

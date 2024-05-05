@@ -358,7 +358,7 @@ void CrossHair_Init(void) {
 }
 
 //******************* Main Function**********
-int main(void) {
+/*int main(void) {
   OS_Init(); // initialize, disable interrupts
   Device_Init();
   CrossHair_Init();
@@ -369,10 +369,10 @@ ShowSpriteTest();
   MaxJitter = 0; // in 1us units
   PseudoCount = 0;
 
-  //********initialize communication channels
+  ********initialize communication channels
   JsFifo_Init();
 
-  //*******attach background tasks***********
+  *******attach background tasks***********
   OS_AddSW1Task(&SW1Push, 4);
   OS_AddSW2Task(&SW2Push, 4);
   OS_AddPeriodicThread(&Producer, PERIOD, 3); // 2 kHz real time sampling of PD3
@@ -389,3 +389,4 @@ ShowSpriteTest();
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
+*/
