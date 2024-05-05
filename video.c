@@ -167,8 +167,8 @@ extern unsigned long NumSamples;
 #define RUNLENGTH 600
 extern Sema4Type LCDFree;
 void RenderThread(void) {
+	spriteMessage data;
 	while (1) {
-    spriteMessage data;
     DrawFifo_Get(&data);
     OS_bWait(&LCDFree);
 		if (data.command == 1) {
