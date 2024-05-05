@@ -22,7 +22,7 @@ static inline void _clearSprite_internal(uint8_t blockx, uint8_t blocky) {
 
 static inline void _updateAmmoLife_internal(long ammo, uint8_t life, uint8_t score) {
 	BSP_LCD_MessageVar(1, 5, 0, "HP: ", life);
-	BSP_LCD_MessageVar(1, 5, 7, "PTS: ", score);
+	BSP_LCD_MessageVar(1, 5, 7, "PT: ", score);
 	if (ammo >= 0) {
 	  BSP_LCD_MessageVar(1, 5, 15, "A: ", ammo);
 		BSP_LCD_MessageVar(1, 5, 19, "/", MAX_AMMO);
@@ -32,11 +32,19 @@ static inline void _updateAmmoLife_internal(long ammo, uint8_t life, uint8_t sco
 	
 }
 
+static inline void _drawLevelBanner_internal(uint8_t levelnum) {
+	BSP_LCD_MessageVar(0, 2, 7, "Level ", levelnum);
+	BSP_LCD_DrawString(0, 10, "Press S1 to continue.", LCD_WHITE);
+}
+
+static inline void _clearLevelBanner_internal() {
+	BSP_LCD_FillRect(0, 0, 127, 111, LCD_BLACK);
+}
+
 void DrawSprite(uint8_t blockx, uint8_t blocky, uint8_t direction, uint32_t sprite) {
 	if (blockx > HORIZONTALNUM || blocky > VERTICALNUM || sprite >= BMP_LENGTH) {
 		return;
 	}
-	// TODO: make blocking.
 	DrawFifo_Put((spriteMessage){
 		.blockx=blockx, .blocky=blocky,
 		.direction=direction,
@@ -55,9 +63,20 @@ void ClearSprite(uint8_t blockx, uint8_t blocky) {
 	});
 }
 
-void UpdateAmmoLife() {
+void UpdateAmmoLife(void) {
 	DrawFifo_Put((spriteMessage){
 		.command=2
+	});
+}
+
+void DrawLevelBanner(void) {
+	DrawFifo_Put((spriteMessage){
+		.command=3
+	});
+}
+void ClearLevelBanner(void) {
+	DrawFifo_Put((spriteMessage){
+		.command=4
 	});
 }
 
@@ -69,10 +88,14 @@ void RenderThread(void) {
     spriteMessage data;
     DrawFifo_Get(&data);
     OS_bWait(&LCDFree);
-		if (data.command & 1) {
+		if (data.command == 1) {
 			_clearSprite_internal(data.blockx, data.blocky);
-		} else if (data.command & 2) {
+		} else if (data.command == 2) {
 			_updateAmmoLife_internal(ammocount.Value, lifecount.Value, score.Value);
+		} else if (data.command == 3) {
+			_drawLevelBanner_internal(levelcount.Value);
+		} else if (data.command == 4) {
+			_clearLevelBanner_internal();
 		} else {
 			_drawSprite_internal(data.blockx, data.blocky, data.direction, data.sprite);
 		}
