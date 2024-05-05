@@ -42,6 +42,9 @@ void EndCritical(long sr); // restore I bit to previous value
 #define DRAWFIFOSUCCESS 1
 #define DRAWFIFOFAIL 0
 
+#define SOUNDFIFOSIZE 16 // can be any size
+#define SOUNDFIFOSUCCESS 1
+#define SOUNDFIFOFAIL 0
 typedef struct {
   uint16_t x, y;
 } jsDataType;
@@ -55,6 +58,12 @@ typedef struct {
 	uint8_t command;
 	uint32_t sprite;
 } spriteMessage;
+
+typedef struct {
+	// start background music = 0, stop background music = 1,
+	// point scored = 2, life lost = 3.
+	uint8_t command;
+} soundEvent;
 
 // initialize pointer FIFO
 void JsFifo_Init(void);
@@ -81,4 +90,21 @@ int DrawFifo_Get(spriteMessage *datapt);
 // number of elements in pointer FIFO
 // 0 to RXFIFOSIZE-1
 uint32_t DrawFifo_Size(void);
+
+// initialize pointer FIFO
+void SoundFifo_Init(void);
+// add element to end of pointer FIFO
+void SoundFifo_Put(soundEvent data);
+// add element to end of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int SoundFifo_TryPut(soundEvent data);
+// remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int SoundFifo_Get(soundEvent *datapt);
+// try to remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int SoundFifo_TryGet(soundEvent *datapt);
+// number of elements in pointer FIFO
+// 0 to RXFIFOSIZE-1
+uint32_t SoundFifo_Size(void);
 #endif //  __FIFO_H__
