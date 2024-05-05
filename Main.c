@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "video.h"
+#include "gameplay.h"
 
 // Constants
 #define BGCOLOR LCD_BLACK
@@ -24,7 +25,7 @@
 #define PERIOD 4000000 // DAS 20Hz sampling period in system time units
 #define PSEUDOPERIOD 8000000
 #define LIFETIME 1000
-#define RUNLENGTH 600 // 30 seconds run length
+
 
 extern Sema4Type LCDFree;
 uint16_t origin[2];   // The original ADC value of x,y if the joystick is not
@@ -32,11 +33,7 @@ uint16_t origin[2];   // The original ADC value of x,y if the joystick is not
 int16_t x = 63;       // horizontal position of the crosshair, initially 63
 int16_t y = 63;       // vertical position of the crosshair, initially 63
 int16_t prevx, prevy; // Previous x and y values of the crosshair
-uint8_t select;       // joystick push
-uint8_t area[2];
-uint32_t PseudoCount;
 
-unsigned long NumCreated;  // Number of foreground threads created
 unsigned long NumSamples;  // Incremented every ADC sample, in Producer
 unsigned long UpdateWork;  // Incremented every update on position values
 unsigned long Calculation; // Incremented every cube number calculation
@@ -87,8 +84,8 @@ int UpdatePosition(uint16_t rawx, uint16_t rawy, jsDataType *data) {
   if (x < 0) {
     x = 0;
   }
-  if (y > 112 - CROSSSIZE) {
-    y = 112 - CROSSSIZE;
+  if (y > 112-1) {
+    y = 112-1;
   }
   if (y < 0) {
     y = 0;
@@ -97,6 +94,8 @@ int UpdatePosition(uint16_t rawx, uint16_t rawy, jsDataType *data) {
   data->y = y;
   return 1;
 }
+
+void Restart(void);
 
 void Producer(void) {
   uint16_t rawX, rawY; // raw adc value
@@ -109,10 +108,13 @@ void Producer(void) {
     BSP_Joystick_Input(&rawX, &rawY, &select);
     thisTime = OS_Time();                            // current time, 12.5 ns
     UpdateWork += UpdatePosition(rawX, rawY, &data); // calculation work
-    NumSamples++;                                    // number of samples
+    //NumSamples++;                                    // number of samples
     if (JsFifo_Put(data) == 0) {                     // send to consumer
       DataLost++;
     }
+		if (select == 0) {
+		OS_AddThread(&Restart, 128, 4);
+		}
     // calculate jitter
     if (UpdateWork > 1) { // ignore timing of first interrupt
       unsigned long diff = OS_TimeDifference(LastTime, thisTime);
@@ -135,31 +137,6 @@ void Producer(void) {
 
 //--------------end of Task 1-----------------------------
 
-//------------------Task 2--------------------------------
-// background thread executes with SW1 button
-// one foreground task created with button push
-// foreground treads run for 2 sec and die
-// ***********ButtonWork*************
-void ButtonWork(void) {
-  uint32_t StartTime, CurrentTime, ElapsedTime;
-  StartTime = OS_MsTime();
-  ElapsedTime = 0;
-  OS_bWait(&LCDFree);
-  BSP_LCD_FillScreen(BGCOLOR);
-  while (ElapsedTime < LIFETIME) {
-    CurrentTime = OS_MsTime();
-    ElapsedTime = CurrentTime - StartTime;
-    BSP_LCD_Message(0, 5, 0, "Life Time:", LIFETIME);
-    BSP_LCD_Message(1, 0, 0, "Horizontal Area:", area[0]);
-    BSP_LCD_Message(1, 1, 0, "Vertical Area:", area[1]);
-    BSP_LCD_Message(1, 2, 0, "Elapsed Time:", ElapsedTime);
-    OS_Sleep(50);
-  }
-  BSP_LCD_FillScreen(BGCOLOR);
-  Button1RespTime = OS_TimeDifference(Button1PushTime, OS_Time());
-  OS_bSignal(&LCDFree);
-  OS_Kill(); // done, OS does not return from a Kill
-}
 
 //************SW1Push*************
 // Called when SW1 Button pushed
@@ -168,12 +145,11 @@ void ButtonWork(void) {
 void SW1Push(void) {
   Button1PushTime = OS_Time();
   if (OS_MsTime() > 20) { // debounce
-    if (OS_AddThread(&ButtonWork, 128, 4)) {
+    if (OS_AddThread(&ShotHandler, 128, 2)) {
       OS_ClearMsTime();
-      NumCreated++;
     }
     OS_ClearMsTime(); // at least 20ms between touches
-  }
+	}
 }
 
 //--------------end of Task 2-----------------------------
@@ -186,6 +162,7 @@ void SW1Push(void) {
 // inputs:  none
 // outputs: none
 void Consumer(void) {
+	uint8_t bx, by;
   while (NumSamples < RUNLENGTH) {
     jsDataType data;
     JsFifo_Get(&data);
@@ -193,11 +170,17 @@ void Consumer(void) {
 
     BSP_LCD_DrawCrosshair(prevx, prevy, LCD_BLACK); // Draw a black crosshair
     BSP_LCD_DrawCrosshair(data.x, data.y, LCD_RED); // Draw a red crosshair
-
-    BSP_LCD_Message(1, 5, 3, "X: ", x);
-    BSP_LCD_Message(1, 5, 12, "Y: ", y);
+		
+		OS_bSignal(&LCDFree);
+    bx = data.x / 16;
+    by = data.y / 16;
+	  if (!BlockArray[bx][by].BlockUnoccupied.Value) {
+			OS_bSignal(&BlockArray[bx][by].Touched);
+			OS_WakeupThread(BlockArray[bx][by].threadId);
+		}
+//    BSP_LCD_Message(1, 5, 3, "X: ", x);
+//    BSP_LCD_Message(1, 5, 12, "Y: ", y);
     ConsumerCount++;
-    OS_bSignal(&LCDFree);
     prevx = data.x;
     prevy = data.y;
   }
@@ -205,29 +188,6 @@ void Consumer(void) {
 }
 
 //--------------end of Task 3-----------------------------
-
-//------------------Task 4--------------------------------
-// foreground thread that runs without waiting or sleeping
-// it executes some calculation related to the position of crosshair
-//******** CubeNumCalc ***************
-// foreground thread, calculates the virtual cube number for the crosshair
-// never blocks, never sleeps, never dies
-// inputs:  none
-// outputs: none
-
-void CubeNumCalc(void) {
-  uint16_t CurrentX, CurrentY;
-  while (1) {
-    if (NumSamples < RUNLENGTH) {
-      CurrentX = x;
-      CurrentY = y;
-      area[0] = CurrentX / 22;
-      area[1] = CurrentY / 20;
-      Calculation++;
-    }
-  }
-}
-//--------------end of Task 4-----------------------------
 
 //------------------Task 5--------------------------------
 // UART background ISR performs serial input/output
@@ -246,9 +206,6 @@ void Interpreter(void) {
     if (!(strcmp(command, "NumSamples"))) {
       UART_OutString("NumSamples: ");
       UART_OutUDec(NumSamples);
-    } else if (!(strcmp(command, "NumCreated"))) {
-      UART_OutString("NumCreated: ");
-      UART_OutUDec(NumCreated);
     } else if (!(strcmp(command, "MaxJitter"))) {
       UART_OutString("MaxJitter: ");
       UART_OutUDec(MaxJitter);
@@ -277,60 +234,21 @@ void Interpreter(void) {
 }
 //--------------end of Task 5-----------------------------
 
-//------------------Task 6--------------------------------
-
-//************ PeriodicUpdater ***************
-// background thread, do some pseudo works to test if you can add multiple
-// periodic threads inputs:  none outputs: none
-void PeriodicUpdater(void) { PseudoCount++; }
-
-//************ Display ***************
-// foreground thread, do some pseudo works to test if you can add multiple
-// periodic threads inputs:  none outputs: none
-void Display(void) {
-  while (NumSamples < RUNLENGTH) {
-    OS_Sleep(1);
-    OS_bWait(&LCDFree);
-    BSP_LCD_Message(1, 4, 0, "PseudoCount: ", PseudoCount);
-    DisplayCount++;
-    OS_bSignal(&LCDFree);
-  }
-  OS_Kill(); // done
-}
-
-//--------------end of Task 6-----------------------------
-
 //------------------Task 7--------------------------------
 // background thread executes with button2
 // one foreground task created with button push
 // ***********ButtonWork2*************
 void Restart(void) {
-  uint32_t StartTime, CurrentTime, ElapsedTime;
-  NumSamples = RUNLENGTH; // first kill the foreground threads
-  OS_Sleep(50);           // wait
-  StartTime = OS_MsTime();
-  ElapsedTime = 0;
-  OS_bWait(&LCDFree);
-  BSP_LCD_FillScreen(BGCOLOR);
-  while (ElapsedTime < 500) {
-    CurrentTime = OS_MsTime();
-    ElapsedTime = CurrentTime - StartTime;
-    BSP_LCD_DrawString(5, 6, "Restarting", LCD_WHITE);
-  }
-  BSP_LCD_FillScreen(BGCOLOR);
-  Button2RespTime = OS_TimeDifference(Button2PushTime, OS_Time());
-  OS_bSignal(&LCDFree);
-  // restart
-  DataLost = 0; // lost data between producer and consumer
-  NumSamples = 0;
-  UpdateWork = 0;
-  MaxJitter = 0; // in 1us units
-  PseudoCount = 0;
-  x = 63;
-  y = 63;
-  NumCreated += OS_AddThread(&Consumer, 128, 1);
-  NumCreated += OS_AddThread(&Display, 128, 3);
-  OS_Kill(); // done, OS does not return from a Kill
+	NumSamples = RUNLENGTH;
+	OS_AddThread(&ShotHandler, 128, 2);
+	OS_Sleep(50);
+	KillAllDemons();
+	OS_Sleep(500);
+	InitGameplay();
+	JsFifo_Init();
+	NumSamples = 0;
+	OS_AddThread(&TitleScreenRoutine, 128, 3);
+	OS_Kill();
 }
 
 //************SW2Push*************
@@ -340,9 +258,8 @@ void Restart(void) {
 void SW2Push(void) {
   Button2PushTime = OS_Time();
   if (OS_MsTime() > 20) { // debounce
-    if (OS_AddThread(&Restart, 128, 4)) {
+    if (OS_AddThread(ReloadHandler, 128, 2)) {
       OS_ClearMsTime();
-      NumCreated++;
     }
     OS_ClearMsTime(); // at least 20ms between touches
   }
@@ -353,9 +270,16 @@ void SW2Push(void) {
 // Fill the screen with the background color
 // Grab initial joystick position to bu used as a reference
 void CrossHair_Init(void) {
+	uint8_t select;
   BSP_LCD_FillScreen(BGCOLOR);
   BSP_Joystick_Input(&origin[0], &origin[1], &select);
 }
+
+// All it does is eternally suspend itself to ensure that the scheduler doesn't crash.
+void SuspendyThread(void) {
+	while (1) OS_Suspend();
+}
+
 
 //******************* Main Function**********
 /*int main(void) {
@@ -363,11 +287,12 @@ void CrossHair_Init(void) {
   Device_Init();
   CrossHair_Init();
 	RenderInit();
-ShowSpriteTest();	
+	
+	InitGameplay();
+	
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
-  PseudoCount = 0;
 
   ********initialize communication channels
   JsFifo_Init();
@@ -376,15 +301,12 @@ ShowSpriteTest();
   OS_AddSW1Task(&SW1Push, 4);
   OS_AddSW2Task(&SW2Push, 4);
   OS_AddPeriodicThread(&Producer, PERIOD, 3); // 2 kHz real time sampling of PD3
-  OS_AddPeriodicThread(&PeriodicUpdater, PSEUDOPERIOD, 3);
 
-  NumCreated = 0;
   // create initial foreground threads
-  NumCreated += OS_AddThread(&Interpreter, 128, 2);
-  NumCreated += OS_AddThread(&Consumer, 128, 1);
-  NumCreated += OS_AddThread(&CubeNumCalc, 128, 3);
-  NumCreated += OS_AddThread(&Display, 128, 3);
-	NumCreated += OS_AddThread(&SpriteRenderThread, 128, 3);
+//  OS_AddThread(&Interpreter, 128, 2);
+	OS_AddThread(&RenderThread, 128, 2);
+	OS_AddThread(&SuspendyThread, 128, 5);
+	OS_AddThread(&TitleScreenRoutine, 128, 3);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes

@@ -1,3 +1,6 @@
+#ifndef EMB_JOYSTICK_H
+#define EMB_JOYSTICK_H
+
 #include <inttypes.h>
 // ------------BSP_Joystick_Init------------
 // Initialize a GPIO pin for input, which corresponds
@@ -20,3 +23,5 @@ void BSP_Joystick_Init(void);
 // Output: none
 // Assumes: BSP_Joystick_Init() has been called
 void BSP_Joystick_Input(uint16_t *x, uint16_t *y, uint8_t *select);
+
+#endif

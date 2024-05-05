@@ -1,3 +1,6 @@
+#ifndef EMB_LCD_H
+#define EMB_LCD_H
+
 #include <inttypes.h>
 // color constants                  red  grn  blu
 #define LCD_BLACK 0x0000      //   0,   0,   0
@@ -286,6 +289,9 @@ void BSP_LCD_PlotIncrement(void);
 void BSP_LCD_Message(int device, int line, int col, char *string,
                      unsigned int value);
 
+void BSP_LCD_MessageVar(int device, int line, int col, char *string,
+                     unsigned int value);
+
 // Initial LCD in OS
 void BSP_LCD_OutputInit(void);
 
@@ -297,3 +303,5 @@ void BSP_LCD_OutputInit(void);
 //(0-5)
 // outputs: none
 void BSP_LCD_DrawCrosshair(int16_t x, int16_t y, int16_t bgColor);
+
+#endif

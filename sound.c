@@ -387,6 +387,7 @@ void play_E1M1_riff2(){
 	play_note(B4, 1);
 	play_note(G4, 1);
 	play_note(B4, 1);
+<<<<<<< HEAD
 	play_note(E5, 1);
 	play_note(G5, 1);
 	play_note(B5, 1);
@@ -430,6 +431,11 @@ void play_E1M1_riff4(){
 	play_note(B4, 1);
 	play_note(E5, 1);
 	play_note(G5, 1);
+=======
+	play_note(E5, 1);
+	play_note(G5, 1);
+	play_note(B5, 1);
+>>>>>>> 5b7a3cf19994c6c8120de09cf27afa70bbc86369
 
 }
 

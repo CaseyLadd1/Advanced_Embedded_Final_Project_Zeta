@@ -50,7 +50,7 @@
 
 // feel free to change the type of semaphore, there are lots of good solutions
 struct Sema4 {
-  long Value; // >0 means free, otherwise means busy
+  volatile long Value; // >0 means free, otherwise means busy
   // add other components here, if necessary to implement blocking
 };
 typedef struct Sema4 Sema4Type;
@@ -82,6 +82,9 @@ int OS_Try(Sema4Type *semaPt);
 // output: none
 void OS_Signal(Sema4Type *semaPt);
 
+// Like OS_Signal, but for an arbitrary count.
+void OS_SignalN(Sema4Type *semaPt, unsigned int count);
+
 // ******** OS_bWait ************
 // input:  pointer to a binary semaphore
 // output: none
@@ -101,7 +104,7 @@ void OS_bSignal(Sema4Type *semaPt);
 //         priority, 0 is highest, 5 is the lowest
 // Outputs: 1 if successful, 0 if this thread can not be added
 // stack size must be divisable by 8 (aligned to double word boundary)
-int OS_AddThread(void (*task)(void), unsigned long stackSize,
+unsigned int OS_AddThread(void (*task)(void), unsigned long stackSize,
                  unsigned long priority);
 
 //******** OS_Id ***************
@@ -109,6 +112,9 @@ int OS_AddThread(void (*task)(void), unsigned long stackSize,
 // Inputs: none
 // Outputs: Thread ID, number greater than zero
 unsigned long OS_Id(void);
+
+// Sets a thread's sleep count to zero.
+void OS_WakeupThread(unsigned long id);
 
 //******** OS_AddPeriodicThread ***************
 // add a background periodic task
@@ -196,6 +202,7 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop);
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void);
+void OS_Clearblinktime(void);
 
 // ******** OS_MsTime ************
 // reads the current time in msec (from Lab 1)
@@ -205,6 +212,8 @@ void OS_ClearMsTime(void);
 // It is ok to make the resolution to match the first call to
 // OS_AddPeriodicThread
 unsigned long OS_MsTime(void);
+unsigned long OS_blinktime(void);
+
 
 //******** OS_Launch ***************
 // start the scheduler, enable interrupts
