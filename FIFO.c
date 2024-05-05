@@ -38,7 +38,11 @@ spriteMessage static DrawFifo[DRAWFIFOSIZE];
 Sema4Type DrawFifoAvailable;
 Sema4Type DrawFifoRoom;
 
-
+soundEvent volatile *SoundPutPt; // put next
+soundEvent volatile *SoundGetPt; // get next
+soundEvent static SoundFifo[SOUNDFIFOSIZE];
+Sema4Type SoundFifoAvailable;
+Sema4Type SoundFifoRoom;
 
 // initialize pointer FIFO
 void JsFifo_Init(void) {
@@ -145,4 +149,84 @@ uint32_t DrawFifo_Size(void) {
             sizeof(spriteMessage));
   }
   return ((uint32_t)(DrawPutPt - DrawGetPt) / sizeof(spriteMessage));
+}
+
+
+// initialize pointer FIFO
+void SoundFifo_Init(void) {
+  long sr;
+  sr = StartCritical(); // make atomic
+  OS_InitSemaphore(&SoundFifoAvailable, 0);
+	OS_InitSemaphore(&SoundFifoRoom, SOUNDFIFOSIZE);
+  SoundPutPt = SoundGetPt = &SoundFifo[0]; // Empty
+  EndCritical(sr);
+}
+// add element to end of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int SoundFifo_TryPut(soundEvent data) {
+	soundEvent volatile *nextPutPt;
+	if (!OS_Try(&SoundFifoRoom)) return SOUNDFIFOFAIL;
+	long sr = StartCritical();
+	nextPutPt = SoundPutPt + 1;
+  if (nextPutPt == &SoundFifo[SOUNDFIFOSIZE]) {
+    nextPutPt = &SoundFifo[0]; // wrap
+  }
+	*(SoundPutPt) = data;   // Put
+  SoundPutPt = nextPutPt; // Success, update
+  OS_Signal(&SoundFifoAvailable);
+	EndCritical(sr);
+	return SOUNDFIFOSUCCESS;
+}
+void SoundFifo_Put(soundEvent data) {
+	soundEvent volatile *nextPutPt;
+	OS_Wait(&SoundFifoRoom);
+	long sr = StartCritical();
+	nextPutPt = SoundPutPt + 1;
+  if (nextPutPt == &SoundFifo[SOUNDFIFOSIZE]) {
+    nextPutPt = &SoundFifo[0]; // wrap
+  }
+	*(SoundPutPt) = data;   // Put
+  SoundPutPt = nextPutPt; // Success, update
+  OS_Signal(&SoundFifoAvailable);
+	EndCritical(sr);
+}
+
+// remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int SoundFifo_Get(soundEvent *datapt) {
+  OS_Wait(&SoundFifoAvailable);
+	long sr = StartCritical();
+  *datapt = *(SoundGetPt++);
+  if (SoundGetPt == &SoundFifo[SOUNDFIFOSIZE]) {
+    SoundGetPt = &SoundFifo[0]; // wrap
+  }
+	OS_Signal(&SoundFifoRoom);
+	EndCritical(sr);
+  return (SOUNDFIFOSUCCESS);
+}
+
+// remove element from front of pointer FIFO
+// return RXFIFOSUCCESS if successful
+int SoundFifo_TryGet(soundEvent *datapt) {
+  if (!OS_Try(&SoundFifoAvailable)) {
+		return SOUNDFIFOFAIL;
+	}
+	long sr = StartCritical();
+  *datapt = *(SoundGetPt++);
+  if (SoundGetPt == &SoundFifo[SOUNDFIFOSIZE]) {
+    SoundGetPt = &SoundFifo[0]; // wrap
+  }
+	OS_Signal(&SoundFifoRoom);
+	EndCritical(sr);
+  return (SOUNDFIFOSUCCESS);
+}
+
+// number of elements in pointer FIFO
+// 0 to RXFIFOSIZE-1
+uint32_t SoundFifo_Size(void) {
+  if (SoundPutPt < SoundGetPt) {
+    return ((uint32_t)(SoundPutPt - SoundGetPt + (SOUNDFIFOSIZE * sizeof(soundEvent))) /
+            sizeof(soundEvent));
+  }
+  return ((uint32_t)(SoundPutPt - SoundGetPt) / sizeof(soundEvent));
 }
