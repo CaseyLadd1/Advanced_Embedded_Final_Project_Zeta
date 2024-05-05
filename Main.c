@@ -25,7 +25,7 @@
 #define PERIOD 4000000 // DAS 20Hz sampling period in system time units
 #define PSEUDOPERIOD 8000000
 #define LIFETIME 1000
-#define RUNLENGTH 600 // 30 seconds run length
+
 
 extern Sema4Type LCDFree;
 uint16_t origin[2];   // The original ADC value of x,y if the joystick is not
@@ -113,7 +113,7 @@ void Producer(void) {
       DataLost++;
     }
 		if (select == 0) {
-		OS_AddThread(&Restart, 128, 1);
+		OS_AddThread(&Restart, 128, 4);
 		}
     // calculate jitter
     if (UpdateWork > 1) { // ignore timing of first interrupt
@@ -145,7 +145,7 @@ void Producer(void) {
 void SW1Push(void) {
   Button1PushTime = OS_Time();
   if (OS_MsTime() > 20) { // debounce
-    if (OS_AddThread(&ShotHandler, 128, 4)) {
+    if (OS_AddThread(&ShotHandler, 128, 2)) {
       OS_ClearMsTime();
     }
     OS_ClearMsTime(); // at least 20ms between touches
@@ -239,32 +239,16 @@ void Interpreter(void) {
 // one foreground task created with button push
 // ***********ButtonWork2*************
 void Restart(void) {
+	NumSamples = RUNLENGTH;
+	OS_AddThread(&ShotHandler, 128, 2);
+	OS_Sleep(50);
+	KillAllDemons();
+	OS_Sleep(500);
+	InitGameplay();
+	JsFifo_Init();
+	NumSamples = 0;
+	OS_AddThread(&TitleScreenRoutine, 128, 3);
 	OS_Kill();
-	// TODO: this.
-  uint32_t StartTime, CurrentTime, ElapsedTime;
-  NumSamples = RUNLENGTH; // first kill the foreground threads
-  OS_Sleep(50);           // wait
-  StartTime = OS_MsTime();
-  ElapsedTime = 0;
-  OS_bWait(&LCDFree);
-  BSP_LCD_FillScreen(BGCOLOR);
-  while (ElapsedTime < 500) {
-    CurrentTime = OS_MsTime();
-    ElapsedTime = CurrentTime - StartTime;
-    BSP_LCD_DrawString(5, 6, "Restarting", LCD_WHITE);
-  }
-  BSP_LCD_FillScreen(BGCOLOR);
-  Button2RespTime = OS_TimeDifference(Button2PushTime, OS_Time());
-  OS_bSignal(&LCDFree);
-  // restart
-  DataLost = 0; // lost data between producer and consumer
-  NumSamples = 0;
-  UpdateWork = 0;
-  MaxJitter = 0; // in 1us units
-  x = 63;
-  y = 63;
-  OS_AddThread(&Consumer, 128, 1);
-  OS_Kill(); // done, OS does not return from a Kill
 }
 
 //************SW2Push*************
@@ -274,7 +258,7 @@ void Restart(void) {
 void SW2Push(void) {
   Button2PushTime = OS_Time();
   if (OS_MsTime() > 20) { // debounce
-    if (OS_AddThread(ReloadHandler, 128, 4)) {
+    if (OS_AddThread(ReloadHandler, 128, 2)) {
       OS_ClearMsTime();
     }
     OS_ClearMsTime(); // at least 20ms between touches
@@ -301,12 +285,11 @@ void SuspendyThread(void) {
 int main(void) {
   OS_Init(); // initialize, disable interrupts
   Device_Init();
-	//move this later
-	//move this later
   CrossHair_Init();
 	RenderInit();
+	
 	InitGameplay();
-//ShowSpriteTest();	
+	
   DataLost = 0; // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0; // in 1us units
@@ -321,9 +304,9 @@ int main(void) {
 
   // create initial foreground threads
 //  OS_AddThread(&Interpreter, 128, 2);
-	OS_AddThread(&RenderThread, 128, 3);
+	OS_AddThread(&RenderThread, 128, 2);
 	OS_AddThread(&SuspendyThread, 128, 5);
-	OS_AddThread(&TitleScreenRoutine, 128, 4);
+	OS_AddThread(&TitleScreenRoutine, 128, 3);
 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes

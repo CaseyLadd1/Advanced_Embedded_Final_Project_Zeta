@@ -39,6 +39,19 @@ static void InitBlockArray(void) {
   }
 }
 
+void KillAllDemons(void) {
+	// So that we don't get the next-level handler.
+	OS_InitSemaphore(&livingDemons, 0);
+	for (uint8_t bx = 0; bx < HORIZONTALNUM; bx++) {
+    for (uint8_t by = 0; by < VERTICALNUM; by++) {
+			OS_bSignal(&BlockArray[bx][by].Touched);
+			if (!BlockArray[bx][by].BlockUnoccupied.Value) {
+				OS_WakeupThread(BlockArray[bx][by].threadId);
+			}
+		}
+	}
+}
+
 void InitGameplay(void) {
   InitBlockArray();
   OS_InitSemaphore(&ammocount, MAX_AMMO);
@@ -53,6 +66,7 @@ static void AwaitS1(void) {
 	OS_bTry(&levelRunning);
 	OS_bWait(&levelRunning);
 	OS_bSignal(&levelRunning);
+	if (NumSamples == RUNLENGTH) OS_Kill();
 }
 
 void Consumer(void);
@@ -65,7 +79,7 @@ void TitleScreenRoutine(void){
 	AwaitS1();
 	ClearScreen();
 	UpdateAmmoLife();
-	OS_AddThread(&LevelStart, 128, 1);
+	OS_AddThread(&LevelStart, 128, 3);
 	OS_AddThread(&Consumer, 128, 1);
 	OS_Kill();
 }
@@ -157,7 +171,7 @@ static void RunDeathSequence(uint8_t x, uint8_t y) {
 	ClearSprite(x, y);
   OS_bSignal(&BlockArray[x][y].BlockFree);
 	if (OS_Try(&livingDemons) == 1) {
-		OS_AddThread(&LevelStart, 128, 1);
+		OS_AddThread(&LevelStart, 128, 3);
 	}
 	OS_Kill();
 }
@@ -199,7 +213,7 @@ void LevelStart(void) {
 	for (int i = 0; i < numSpawn; i++) {
 		OS_Signal(&livingDemons);
 	  // You filthy demon spawn! Sorry, it just felt surprisingly appropriate.
-	  OS_AddThread(&DemonThread, 128, 4);
+	  OS_AddThread(&DemonThread, 128, 3);
 	}
 	OS_Kill();
 }

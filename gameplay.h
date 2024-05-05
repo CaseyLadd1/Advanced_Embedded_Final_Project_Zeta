@@ -7,6 +7,7 @@
 
 #define MAX_LIFE 5
 #define MAX_AMMO 6
+#define RUNLENGTH 600 // 30 seconds run length
 
 // Free and Unoccupied have subtly different meanings here.
 // A block is Free if it is not currently allocated by a thread.
@@ -32,6 +33,7 @@ extern Sema4Type lifecount;
 extern Sema4Type scorecount;
 extern Sema4Type levelcount;
 extern Sema4Type score;
+extern unsigned long NumSamples;
 
 void InitGameplay(void);
 void DemonThread(void);
@@ -39,5 +41,6 @@ void ShotHandler(void);
 void ReloadHandler(void);
 void LevelStart(void);
 void TitleScreenRoutine(void);
+void KillAllDemons(void);
 
 #endif
