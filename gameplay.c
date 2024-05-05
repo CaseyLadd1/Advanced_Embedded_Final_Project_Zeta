@@ -190,6 +190,7 @@ void EndGame(void) {
 	DrawEndScreen();
 	AwaitS1_inner();
 	OS_AddThread(&Restart, 128, 4);
+	OS_Kill();
 }
 
 static void RunShootSequence(uint8_t x, uint8_t y) {
