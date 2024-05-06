@@ -10,194 +10,13 @@
 #include <stdint.h>
 #include "FIFO.h"
 #include "sound.h"
+#include "sound array.h"
 #include "os.h"
-
-static void InitPWM1();
-static void tone_length(uint32_t duration);
-static void play_tone(uint32_t frequency);
-static void stop_buzzer();
-
-#define G2		98
-#define Gb2		104
-#define A2		110
-#define Ab2		117
-#define B2		123
-#define C3		131
-#define Db3		139
-#define D3		147
-#define Eb3		156
-#define E3		165
-#define F3		175
-#define Gb3		185
-#define G3		196
-#define Ab3		208
-#define A3		220
-#define Bb3		233
-#define B3		247
-#define C4		262
-#define Db4		277
-#define D4		294
-#define Eb4		311
-#define E4		330
-#define F4		349
-#define Gb4		370
-#define G4		392
-#define Ab4		415
-#define A4		440
-#define Bb4		466
-#define B4		494
-#define C5		523
-#define Db5		554
-#define D5		587
-#define Eb5		622
-#define E5		659
-#define F5		698
-#define Gb5		740
-#define G5		784
-#define Ab5		831
-#define A5		880
-#define Bb5		932
-#define B5		988
-#define C6		1047
-#define Db6		1109
-#define D6		1175
-#define Eb6		1245
-#define E6		1319
-#define F6		1397
-#define Gb6		1480
-#define G6		1568
-#define Ab6		1661
-#define A6		1760
-#define Bb6		1865
-#define B6		1976
-
-// Each element:
-// {tone, duration, rest after}
-// 
-static uint16_t music[][3] = {
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{E4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{D4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{C4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{Bb3, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{B3, 1, 1},   
-	{C4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{E4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{D4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{C4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{Bb3, 5, 6},
-	
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{E4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{D4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{C4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{Bb3, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{B3, 1, 1},    
-	{C4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{E4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 1},
-	{D4, 1, 1},
-	{E3, 1, 1},
-	{E3, 1, 6},
-	
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{A4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{G4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{F4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{Eb4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{E4, 1, 1},
-	{F4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{A4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{G4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{F4, 1, 1},
-	{A3, 1, 1},
-	{A3, 1, 1},
-	{Eb4, 5, 6},
-	
-	{Gb4, 1, 1},
-	{E4, 1, 1},
-	{Eb4, 1, 1},
-	{Gb4, 1, 1},
-	{A5, 1, 1},
-	{G4, 1, 1},
-	{Gb4, 1, 1},
-	{Eb4, 1, 1},
-	{Gb4, 1, 1},
-	{G4, 1, 1},
-	{A5, 1, 1},
-	{B5, 1, 1},
-	{A5, 1, 1},
-	{G4, 1, 1},
-	{Gb4, 1, 1},
-	{Eb4, 1, 6},
-	
-	{B5, 1, 1},
-	{G4, 1, 1},
-	{E4, 1, 1},
-	{G4, 1, 1},
-	{B5, 1, 1},
-	{G4, 1, 1},
-	{B5, 1, 1},
-	{E5, 1, 1},
-	{B5, 1, 1},
-	{G4, 1, 1},
-	{B5, 1, 1},
-	{G4, 1, 1},
-	{B5, 1, 1},
-	{E5, 1, 1},
-	{G5, 1, 1},
-	{B6, 1, 6}
-};
-
 
 static uint8_t BackgroundMusic;
 static uint8_t tempo;
 static uint32_t musicPosition;
-static uint32_t trackLength = sizeof(music)/sizeof(uint16_t[3]);
+static uint32_t trackLength;
 static unsigned long soundThreadId;
 static Sema4Type soundReady;
 static Sema4Type eventSubmitted;
@@ -206,7 +25,7 @@ void InitSound(void) {
 	BackgroundMusic = 0;
 	SoundFifo_Init();
 	InitPWM1();
-	tempo = 100;
+	tempo = 250;
 	musicPosition = 0;
 	OS_InitSemaphore(&soundReady, 0);
 	OS_InitSemaphore(&eventSubmitted, 0);
@@ -259,7 +78,7 @@ void InitPWM1() {
 // If tempo is a requirement and a timer is necessary, put the number of milliseconds
 static void play_tone(uint32_t frequency){
 	uint32_t clock_frequency_with_divider = 16000000 / 4;
-	uint32_t load_value = clock_frequency_with_divider / frequency;
+	uint32_t load_value = clock_frequency_with_divider / frequency * 83 / 33;
 	uint32_t duty_cycle = load_value / 2;
 	
 	PWM1_3_LOAD_R = load_value;
@@ -287,10 +106,10 @@ static void play_rest(uint32_t duration){
 
 
 static void _stepBackgroundMusic_internal(void) {
-	play_note(music[musicPosition][0], music[musicPosition][1]);
+	play_note(E1M1[musicPosition][0], E1M1[musicPosition][1]);
 	stop_buzzer();
 	if (OS_bTry(&eventSubmitted)) return;
-	 tone_length(music[musicPosition][2]);
+	 tone_length(E1M1[musicPosition][2]);
 }
 
 static void _pointScored_internal(void) {
@@ -319,6 +138,7 @@ void SoundThread(void) {
 		if (BackgroundMusic) {
 			if (SoundFifo_TryGet(&data) == SOUNDFIFOFAIL) {
 				OS_bTry(&eventSubmitted);
+				trackLength = sizeof(E1M1)/sizeof(uint16_t[3]);
 				_stepBackgroundMusic_internal();
 				musicPosition++;
 				musicPosition -= trackLength * (musicPosition == trackLength);
