@@ -21,7 +21,6 @@ static unsigned long soundThreadId;
 static Sema4Type soundReady;
 static Sema4Type eventSubmitted;
 extern uint8_t currentTrack;
-uint8_t oldtrack;
 uint8_t trackchanged = 0;
 
 void InitSound(void) {
@@ -65,7 +64,7 @@ void InitPWM1() {
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R5; // Enable system clock to PORTF
 	SYSCTL_RCC_R |= SYSCTL_RCC_USEPWMDIV; // Enable clock division
 	SYSCTL_RCC_R &= ~(SYSCTL_RCC_PWMDIV_M); // Turn off direct feed
-	SYSCTL_RCC_R |= SYSCTL_RCC_PWMDIV_4; // Turn on dividion by 4
+	SYSCTL_RCC_R |= SYSCTL_RCC_PWMDIV_8; // Turn on dividion by 8
 	
 	GPIO_PORTF_AFSEL_R |= (1 << 2); // PF2 set alternate function
 	GPIO_PORTF_PCTL_R = GPIO_PCTL_PF2_M1PWM6; // Make PF2 PWM output pin
@@ -80,7 +79,7 @@ void InitPWM1() {
 // Duration can be any number as long as the ratio between duration of notes is consistent
 // If tempo is a requirement and a timer is necessary, put the number of milliseconds
 static void play_tone(uint32_t frequency){
-	uint32_t clock_frequency_with_divider = 16000000 / 4;
+	uint32_t clock_frequency_with_divider = 16000000 / 8;
 	uint32_t load_value = clock_frequency_with_divider / frequency * 83 / 33;
 	uint32_t duty_cycle = load_value / 2;
 	
@@ -190,169 +189,3 @@ void SoundThread(void) {
 		}
 	}
 }
-
-//void E2M6(){
-	//code goes here
-	//PWM data for title track "Sinister"
-	
-	
-//}
-
-//void E1M1(){
-	//code goes here
-	//PWM data for main track "At Doom's Gate"
-	
-//main 1
-	//E3 , 1/16
-	//E3 , 1/16
-	//E4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//D4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//C4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//Bflat4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//B4 , 1/16	
-	//C4 , 1/16
-	//E3 , 1/16
-	//E4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//D4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//C4 , 1/16
-	//E3 , 1/16
-	//E3 , 1/16
-	//Bflat4 , 5/16
-//main 1
-	
-//alt main 1//
-		//E3 , 1/16
-		//E3 , 1/16
-		//E4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-		//D4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-		//C4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-		//Bb4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-		//B4 , 1/16	
-		//C4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-		//E4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-		//D4 , 1/16
-		//E3 , 1/16
-		//E3 , 1/16
-//alt main 1//
-
-//main 2
-		//A4 , 1/16
-		//A4 , 1/16
-		//A5 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//G4 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//F4 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//Eb4 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//E4 , 1/16
-		//F4 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//A5 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//G4 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//F4 , 1/16
-		//A4 , 1/16
-		//A4 , 1/16
-		//Eb4 , 5/16
-//main 2
-
-//alt main 2
-//alt main2
-
-//main 3
-//main 3
-
-//riff 1
-		//F#4 , 1/32
-		//E4 , 1/32
-		//D#4 , 1/32
-		//F#4 , 1/32
-		//A5 , 1/32
-		//G4 , 1/32
-		//F#4 , 1/32
-		//D#4 , 1/32
-		//F#4 , 1/32
-		//G4 , 1/32
-		//A5 , 1/32
-		//B5 , 1/32
-		//A5 , 1/32
-		//G4 , 1/32
-		//F#4 , 1/32
-		//D#4 , 1/32
-//riff 1
-
-//riff 2
-		//B5 , 1/32
-		//G4 , 1/32
-		//E4 , 1/32
-		//G4 , 1/32
-		//B5 , 1/32
-		//G4 , 1/32
-		//B5 , 1/32
-		//E5 , 1/32
-		//B5 , 1/32
-		//G4 , 1/32
-		//B5 , 1/32
-		//G4 , 1/32
-		//B5 , 1/32
-		//E5 , 1/32
-		//G5 , 1/32
-		//B6 , 1/32
-//riff 2
-
-//riff 3
-//riff 3
-	
-		//loop main 1 three times
-		//alt main 1
-		//riff 1
-		//main
-		//alt main 1
-		//riff 2
-		//main 2
-		//alt main 2
-		//riff 3
-		//loop main 1 two times
-		//main 3
-
-	
-//}
-
-//void E2M3(){
-	//code goes here
-	//PWM data for game over track "Intermission From Doom"
-//}
