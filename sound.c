@@ -20,6 +20,9 @@ static uint32_t trackLength;
 static unsigned long soundThreadId;
 static Sema4Type soundReady;
 static Sema4Type eventSubmitted;
+extern uint8_t currentTrack;
+uint8_t oldtrack;
+uint8_t trackchanged = 0;
 
 void InitSound(void) {
 	BackgroundMusic = 0;
@@ -106,10 +109,27 @@ static void play_rest(uint32_t duration){
 
 
 static void _stepBackgroundMusic_internal(void) {
-	play_note(E1M1[musicPosition][0], E1M1[musicPosition][1]);
+	if (currentTrack==3){
+		play_note(E2M3_Intermission[musicPosition][0], E2M3_Intermission[musicPosition][1]);
+	}
+	if (currentTrack==2){
+		play_note(E1M1[musicPosition][0], E1M1[musicPosition][1]);
+	}
+	if (currentTrack==1){
+		play_note(E2M6_Sinister[musicPosition][0], E2M6_Sinister[musicPosition][1]);
+	}
+	
 	stop_buzzer();
 	if (OS_bTry(&eventSubmitted)) return;
-	 tone_length(E1M1[musicPosition][2]);
+		if (currentTrack==3){ 
+			tone_length(E2M3_Intermission[musicPosition][2]);
+		}
+	if (currentTrack==2){ 
+			tone_length(E1M1[musicPosition][2]);
+		}
+		if (currentTrack==1){ 
+			tone_length(E2M6_Sinister[musicPosition][2]);
+		}
 }
 
 static void _pointScored_internal(void) {
@@ -141,6 +161,10 @@ void SoundThread(void) {
 				trackLength = sizeof(E1M1)/sizeof(uint16_t[3]);
 				_stepBackgroundMusic_internal();
 				musicPosition++;
+				if (trackchanged==1){
+					trackchanged=0;
+					musicPosition=0;
+				}
 				musicPosition -= trackLength * (musicPosition == trackLength);
 				continue;
 			}

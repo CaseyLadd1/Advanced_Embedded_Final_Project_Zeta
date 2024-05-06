@@ -35,6 +35,8 @@ int16_t x = 63;       // horizontal position of the crosshair, initially 63
 int16_t y = 63;       // vertical position of the crosshair, initially 63
 int16_t prevx, prevy; // Previous x and y values of the crosshair
 
+uint8_t currentTrack = 1;
+extern uint8_t trackchanged;
 unsigned long NumSamples;  // Incremented every ADC sample, in Producer
 unsigned long UpdateWork;  // Incremented every update on position values
 unsigned long Calculation; // Incremented every cube number calculation
@@ -250,6 +252,8 @@ void Restart(void) {
 	JsFifo_Init();
 	NumSamples = 0;
 	OS_AddThread(&TitleScreenRoutine, 128, 3);
+	currentTrack=1;
+	trackchanged=1;
 	OS_Kill();
 }
 

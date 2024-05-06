@@ -5,6 +5,8 @@
 #include "rng/rng.h"
 #include "tm4c123gh6pm.h"
 #include "sound.h"
+extern uint8_t currentTrack;
+extern uint8_t trackchanged;
 
 const uint32_t ShootSequence[] = {
     BMP_2_1_CAC_ATTTAC_A_OFFSET,  BMP_1_1_CAC_ATTAC_B_OFFSET,
@@ -75,6 +77,8 @@ static void AwaitS1(void) {
 
 void Consumer(void);
 void TitleScreenRoutine(void){
+	currentTrack=1;
+	trackchanged=1;
 	AwaitSoundReady();
 	StartBackgroundMusic();
 	ClearScreen();
@@ -86,6 +90,8 @@ void TitleScreenRoutine(void){
 	ClearScreen();
 	UpdateAmmoLife();
 	OS_AddThread(&LevelStart, 128, 3);
+	currentTrack=2;
+	trackchanged=1;
 	OS_AddThread(&Consumer, 128, 1);
 	OS_Kill();
 }
@@ -184,6 +190,8 @@ static void RunDeathSequence(uint8_t x, uint8_t y) {
 
 void Restart(void);
 void EndGame(void) {
+	currentTrack=3;
+	trackchanged=1;
 	NumSamples = RUNLENGTH;
 	KillAllDemons();
 	OS_Sleep(500);
