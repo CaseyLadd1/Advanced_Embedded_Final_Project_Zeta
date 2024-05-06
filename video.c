@@ -80,7 +80,7 @@ static void _drawTitle_internal(void) {
 static void _drawInstructions_internal(void) {
 	BSP_LCD_DrawString(0, 0, "Instructions:", LCD_WHITE);
 	BSP_LCD_DrawString(2, 2, "Use Joystick to AIM", LCD_WHITE);
-	BSP_LCD_DrawString(2, 3, "Press S1 to FIRE", LCD_WHITE);
+	BSP_LCD_DrawString(2, 3, "Hit demons to FIRE", LCD_WHITE);
 	BSP_LCD_DrawString(2, 4, "Press S2 to RELOAD", LCD_WHITE);
 	BSP_LCD_DrawString(2, 5, "Press Joystick to", LCD_WHITE);
 	BSP_LCD_DrawString(13, 6, "RESTART", LCD_WHITE);
