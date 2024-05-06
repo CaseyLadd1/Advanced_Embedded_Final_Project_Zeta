@@ -74,3 +74,7 @@ The group is coordinating to divide up tasks whenever possible.
 Our hope in the upcoming week is to flesh out the skeleton code, to complete our creation
 of audio and visual resources, and to work out the best order for the creation and execution
 of different threads.
+
+# Presentation Slides
+
+The presentation slides can be retrieved [here](https://docs.google.com/presentation/d/1YdSeabMUoY3mXuY1aC4qzL6UkgiahRllYZj-an8fk7M/edit?usp=sharing).
