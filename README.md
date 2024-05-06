@@ -78,3 +78,7 @@ of different threads.
 # Presentation Slides
 
 The presentation slides can be retrieved [here](https://docs.google.com/presentation/d/1YdSeabMUoY3mXuY1aC4qzL6UkgiahRllYZj-an8fk7M/edit?usp=sharing).
+
+# Video Demo
+
+A video demonstration of the game can be viewed [here](https://virginia.box.com/s/mjtwh56fnri0kfsvqzxph12g0vdns3rw).
