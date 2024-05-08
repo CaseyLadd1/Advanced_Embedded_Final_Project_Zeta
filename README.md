@@ -82,3 +82,5 @@ The presentation slides can be retrieved [here](https://docs.google.com/presenta
 # Video Demo
 
 A video demonstration of the game can be viewed [here](https://virginia.box.com/s/mjtwh56fnri0kfsvqzxph12g0vdns3rw).
+
+Additional video demos can be viewed [here via Google Drive](https://drive.google.com/drive/folders/1RJH1XRDpfqmbB9g1JII2OcMEOh04_PjK?usp=sharing).
